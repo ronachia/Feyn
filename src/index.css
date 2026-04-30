@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #F8FAFF;
+  color: #1E293B;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  background-color: #F8FAFF;
+}
+
+.app-shell {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  position: relative;
+  background-color: #F8FAFF;
+}
+
+textarea:focus, input:focus {
+  outline: none;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #DBEAFE;
+}
+::-webkit-scrollbar-thumb {
+  background: #93C5FD;
+  border-radius: 2px;
+}
+
+/* Subtle shadow for white cards on blue bg */
+.bg-app-card {
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.10);
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  }
+  .gradient-accent {
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+  }
+  .gradient-card {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #2563EB 0%, #F97316 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .glow-purple {
+    box-shadow: 0 4px 18px rgba(37, 99, 235, 0.28);
+  }
+  .glow-orange {
+    box-shadow: 0 4px 18px rgba(249, 115, 22, 0.28);
+  }
+  .glow-cyan {
+    box-shadow: 0 4px 18px rgba(37, 99, 235, 0.18);
+  }
+}
