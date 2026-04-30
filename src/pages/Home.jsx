@@ -28,14 +28,14 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-slate-500 text-sm">{greeting} 👋</p>
-            <h1 className="text-2xl font-bold text-slate-800 mt-0.5">
+            <h1 className="text-2xl font-extrabold text-slate-900 mt-0.5 tracking-tight">
               Feyn<span className="text-gradient">Learn</span>
             </h1>
           </div>
           <motion.div
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
-            className="flex items-center gap-2 bg-app-card border border-orange-300 rounded-2xl px-4 py-2"
+            className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-2xl px-4 py-2 shadow-sm"
           >
             <Flame size={18} className="text-orange-500" fill="currentColor" />
             <span className="text-slate-800 font-bold text-lg">{streak}</span>
@@ -54,7 +54,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-1.5">
               <Zap size={13} className="text-blue-600" />
-              <span className="text-blue-600 font-bold text-sm">{xp || 0} XP</span>
+              <span className="text-blue-600 font-bold text-sm tabular-nums">{xp || 0} XP</span>
               {levelInfo.next && <span className="text-slate-400 text-xs">/ {levelInfo.next.minXP}</span>}
             </div>
           </div>
@@ -90,7 +90,7 @@ export default function Home() {
           <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-3">Next Up</p>
           <button
             onClick={() => navigate(`/lesson/${nextLesson.id}`)}
-            className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-left relative overflow-hidden group hover:border-blue-400 transition-all"
+            className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-left relative overflow-hidden group hover:border-blue-400 hover:shadow-md active:scale-[0.99] transition-all duration-200"
           >
             <div className="absolute top-0 right-0 w-28 h-28 gradient-primary opacity-8 rounded-full translate-x-8 -translate-y-8 group-hover:opacity-15 transition-opacity" />
             <div className="flex items-center gap-4">
@@ -197,8 +197,8 @@ export default function Home() {
                               <button
                                 key={lesson.id}
                                 onClick={() => navigate(`/lesson/${lesson.id}`)}
-                                className={`w-full flex items-center gap-3 bg-app-card border rounded-2xl px-4 py-3 text-left transition-all ${
-                                  done ? 'border-emerald-200' : 'border-app-border hover:border-blue-300'
+                                className={`w-full flex items-center gap-3 bg-app-card border rounded-2xl px-4 py-3 text-left transition-all duration-200 ${
+                                  done ? 'border-emerald-200 bg-emerald-50/30' : 'border-app-border hover:border-blue-300 hover:shadow-sm active:scale-[0.99]'
                                 }`}
                               >
                                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 ${

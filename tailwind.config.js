@@ -5,11 +5,14 @@ export default {
     extend: {
       colors: {
         app: {
-          bg:      '#F8FAFF',
-          surface: '#EFF6FF',
+          bg:      '#FAFAFA',
+          surface: '#F0F4FF',
           card:    '#FFFFFF',
-          border:  '#DBEAFE',
+          border:  '#E2E8F0',
           accent:  '#F97316',
+          primary: '#2563EB',
+          text:    '#0F172A',
+          muted:   '#64748B',
         },
       },
       fontFamily: {

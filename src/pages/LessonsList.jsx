@@ -21,16 +21,16 @@ function LessonCard({ lesson, done, onDelete, index }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
-      className={`bg-app-card border rounded-2xl overflow-hidden transition-all ${
-        done ? 'border-emerald-500/25' : 'border-app-border hover:border-blue-500/35'
+      className={`bg-app-card border rounded-2xl overflow-hidden transition-all duration-200 ${
+        done ? 'border-emerald-300 bg-emerald-50/20' : 'border-app-border hover:border-blue-300 hover:shadow-sm'
       }`}
     >
       <button
         onClick={() => navigate(`/lesson/${lesson.id}`)}
-        className="w-full flex items-center gap-4 p-4 text-left"
+        className="w-full flex items-center gap-4 p-4 text-left active:scale-[0.99] transition-transform duration-150"
       >
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 ${
-          done ? 'bg-emerald-500/10' : 'bg-app-surface'
+          done ? 'bg-emerald-100' : 'bg-app-surface'
         }`}>
           {lesson.icon}
         </div>
@@ -48,17 +48,17 @@ function LessonCard({ lesson, done, onDelete, index }) {
           </div>
         </div>
         {done
-          ? <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-              <span className="text-emerald-400 text-xs font-bold">✓</span>
+          ? <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-xs font-bold">✓</span>
             </div>
-          : <ChevronRight size={16} className="text-gray-600 flex-shrink-0" />
+          : <ChevronRight size={16} className="text-slate-400 flex-shrink-0" />
         }
       </button>
       {lesson.isCustom && (
         <div className="border-t border-app-border px-4 py-2 flex justify-end">
           <button
             onClick={onDelete}
-            className="flex items-center gap-1.5 text-rose-400 text-xs"
+            className="flex items-center gap-1.5 text-rose-400 hover:text-rose-600 text-xs transition-colors duration-150"
           >
             <Trash2 size={12} /> Delete
           </button>
