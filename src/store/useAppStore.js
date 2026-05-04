@@ -88,6 +88,11 @@ const useAppStore = create(
       setLanguage: (lang) => set({ language: lang }),
       notificationsEnabled: false,
       setNotificationsEnabled: (v) => set({ notificationsEnabled: v }),
+      darkMode: false,
+      setDarkMode: (v) => {
+        set({ darkMode: v })
+        document.documentElement.classList.toggle('dark', v)
+      },
 
       // ─── Gamification ─────────────────────────────────────────
       xp: 0,

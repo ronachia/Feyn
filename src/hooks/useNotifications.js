@@ -59,5 +59,6 @@ export default function useNotifications() {
     permission: typeof Notification !== 'undefined' ? Notification.permission : 'default',
     enable,
     disable,
+    showStreakReminder,
   }
 }

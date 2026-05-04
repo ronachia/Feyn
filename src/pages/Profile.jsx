@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Flame, BookOpen, Target, Key, Trash2, ChevronRight, Eye, EyeOff, TrendingUp, Zap, Crown, Bell, BellOff, Globe } from 'lucide-react'
+import { Flame, BookOpen, Target, Key, Trash2, ChevronRight, Eye, EyeOff, TrendingUp, Zap, Crown, Bell, Globe, LogOut, Moon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
@@ -9,6 +9,8 @@ import { getLessonById } from '../data/lessons'
 import { BADGES, getLevelInfo } from '../data/badges'
 import BottomNav from '../components/BottomNav'
 import useNotifications from '../hooks/useNotifications'
+import { useAuth } from '../contexts/AuthContext'
+import useProgressSync from '../hooks/useProgressSync'
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -17,13 +19,22 @@ export default function Profile() {
     streak, completedLessons, gaps, sessionHistory,
     openaiKey, setOpenaiKey, resetProgress, xp, earnedBadges,
     isPremium, activatePremium, deactivatePremium, language, setLanguage,
+    darkMode, setDarkMode,
   } = useAppStore()
   const levelInfo = getLevelInfo(xp || 0)
   const { notificationsEnabled, isSupported, enable, disable } = useNotifications()
+  const { authUser, signOut } = useAuth()
+  const { syncProfile } = useProgressSync()
 
   const handleLanguageChange = (lang) => {
     setLanguage(lang)
     i18n.changeLanguage(lang)
+    syncProfile({ language: lang })
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/auth', { replace: true })
   }
 
   const [apiKeyInput, setApiKeyInput]   = useState(openaiKey)
@@ -54,6 +65,24 @@ export default function Profile() {
       </div>
 
       <div className="px-6 space-y-5">
+        {/* ── Account ───────────────────────────────────────────────── */}
+        {authUser && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="bg-app-card border border-app-border rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-lg glow-purple flex-shrink-0">
+                {authUser.email?.[0]?.toUpperCase() ?? '?'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-slate-800 text-sm font-semibold truncate">{authUser.email}</p>
+                <p className="text-gray-500 text-xs">Synced across devices ✓</p>
+              </div>
+              <button onClick={handleSignOut} className="flex items-center gap-1.5 text-gray-500 text-xs hover:text-rose-400 transition-colors">
+                <LogOut size={14} /> Sign out
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {/* ── Subscription Banner ───────────────────────────────────── */}
         {isPremium ? (
           <div className="gradient-primary rounded-2xl p-4 flex items-center gap-3 glow-purple">
@@ -254,6 +283,22 @@ export default function Profile() {
                 ))}
               </div>
             </div>
+            {/* Dark Mode */}
+            <div className="flex items-center gap-3 px-4 py-4">
+              <Moon size={18} className="text-blue-400 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-slate-800 text-sm font-medium">Dark Mode</p>
+              </div>
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`w-12 h-6 rounded-full transition-all flex items-center px-0.5 ${
+                  darkMode ? 'gradient-primary justify-end' : 'bg-app-border justify-start'
+                }`}
+              >
+                <div className="w-5 h-5 rounded-full bg-white shadow" />
+              </button>
+            </div>
+
             {/* Notifications */}
             {isSupported && (
               <div className="flex items-center gap-3 px-4 py-4">

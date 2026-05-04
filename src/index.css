@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS Variables — Light Mode ───────────────────────────── */
+:root {
+  --bg-app:       #FAFAFA;
+  --bg-root:      #F0F4FF;
+  --bg-card:      #FFFFFF;
+  --bg-surface:   #F8FAFC;
+  --border:       #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted:   #94A3B8;
+  --scrollbar-track: #F1F5F9;
+  --scrollbar-thumb: #CBD5E1;
+}
+
+/* ── CSS Variables — Dark Mode ────────────────────────────── */
+.dark {
+  --bg-app:       #0F172A;
+  --bg-root:      #070E1A;
+  --bg-card:      #1E293B;
+  --bg-surface:   #162032;
+  --border:       #2D3F55;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted:   #475569;
+  --scrollbar-track: #1E293B;
+  --scrollbar-thumb: #334155;
+}
+
 /* ── Reset & Base ─────────────────────────────────────────── */
 *, *::before, *::after {
   -webkit-tap-highlight-color: transparent;
@@ -15,18 +43,19 @@ html, body, #root {
 }
 
 body {
-  background-color: #FAFAFA;
-  color: #0F172A;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root {
   display: flex;
   justify-content: center;
-  background-color: #F0F4FF;
+  background-color: var(--bg-root);
 }
 
 .app-shell {
@@ -34,7 +63,7 @@ body {
   max-width: 430px;
   min-height: 100vh;
   position: relative;
-  background-color: #FAFAFA;
+  background-color: var(--bg-app);
 }
 
 /* ── Cursor ────────────────────────────────────────────────── */
@@ -54,8 +83,8 @@ button:focus-visible {
 
 /* ── Scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #F1F5F9; }
-::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
 
 /* ── Card shadow ───────────────────────────────────────────── */
 .bg-app-card {

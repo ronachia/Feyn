@@ -12,6 +12,7 @@ import { analyzeFluency } from '../services/whisper'
 import { getStudentQuestion } from '../services/teachMode'
 import XPToast from '../components/XPToast'
 import VoiceRecorder from '../components/VoiceRecorder'
+import useProgressSync from '../hooks/useProgressSync'
 
 const READING_TIME = 60
 
@@ -19,6 +20,7 @@ export default function Lesson() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { openaiKey, completeLesson, addGaps, addSession, earnXP, calculateSessionXP, recordSessionStats, streak, customLessons, isPremium, checkAndIncrementAI, remainingAICalls } = useAppStore()
+  const { syncProgress } = useProgressSync()
 
   const lesson = getLessonById(id) || customLessons.find((l) => l.id === id)
 
@@ -149,6 +151,7 @@ export default function Lesson() {
     setShowXPToast(true)
     setTimeout(() => setShowXPToast(false), 2500)
     setPhase('complete')
+    setTimeout(() => syncProgress(), 500)
   }
 
   const handleTryAgain = () => {

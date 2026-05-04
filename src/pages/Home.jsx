@@ -1,13 +1,12 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Flame, TrendingUp, BookOpen, ChevronRight, Zap } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Flame, TrendingUp, BookOpen, ChevronRight, Zap, RotateCcw, X, Play, Brain, PenLine, RefreshCw } from 'lucide-react'
 import useAppStore from '../store/useAppStore'
-import { lessons, getLevelColor, getLevelLabel, getSubLevelColor, SUB_LEVELS, SUB_LEVEL_META } from '../data/lessons'
+import { lessons, getLevelColor, getLevelLabel } from '../data/lessons'
 import { getLevelInfo } from '../data/badges'
 import BottomNav from '../components/BottomNav'
-
-const LEVEL_ORDER = ['beginner', 'intermediate', 'advanced']
-const LEVEL_EMOJI = { beginner: '🌱', intermediate: '🌿', advanced: '🌳' }
+import useSRS from '../hooks/useSRS'
 
 export default function Home() {
   const navigate        = useNavigate()
@@ -17,9 +16,18 @@ export default function Home() {
   const nextLesson    = lessons.find((l) => !completedLessons.includes(l.id)) || lessons[0]
   const totalSessions = completedLessons.length
   const topGaps       = gaps.slice(0, 3)
+  const { dueForReview } = useSRS()
 
   const greetingHour = new Date().getHours()
   const greeting     = greetingHour < 12 ? 'Good morning' : greetingHour < 18 ? 'Good afternoon' : 'Good evening'
+
+  const [methodCardVisible, setMethodCardVisible] = useState(
+    () => localStorage.getItem('feynman-intro-dismissed') !== 'true'
+  )
+  const dismissMethodCard = () => {
+    localStorage.setItem('feynman-intro-dismissed', 'true')
+    setMethodCardVisible(false)
+  }
 
   return (
     <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-36">
@@ -142,99 +150,144 @@ export default function Home() {
           </motion.div>
         )}
 
-        {/* ── Lessons by Level ────────────────────────────────────────── */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Lessons</p>
-            <button onClick={() => navigate('/lessons')} className="text-blue-500 text-xs font-medium">See all →</button>
-          </div>
-          <div className="space-y-5">
-            {LEVEL_ORDER.map((level) => {
-              const c = getLevelColor(level)
-              const levelLessons = lessons.filter((l) => l.level === level)
-              const doneCnt = levelLessons.filter((l) => completedLessons.includes(l.id)).length
-              const pct = levelLessons.length ? Math.round((doneCnt / levelLessons.length) * 100) : 0
+        {/* ── SRS Review Due ──────────────────────────────────────── */}
+        {dueForReview.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
+            <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-3">
+              🔁 Review Due ({dueForReview.length})
+            </p>
+            <div className="bg-app-card border border-amber-200 rounded-2xl divide-y divide-app-border overflow-hidden">
+              {dueForReview.map(({ lesson, daysSinceLast, clarityScore, urgency }) => (
+                <button
+                  key={lesson.id}
+                  onClick={() => navigate(`/lesson/${lesson.id}`)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-amber-50/40 active:scale-[0.99] transition-all"
+                >
+                  <span className="text-xl flex-shrink-0">{lesson.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-slate-800 text-sm font-semibold truncate">{lesson.title}</p>
+                    <p className="text-gray-400 text-xs">
+                      Last: {daysSinceLast === 0 ? 'today' : `${daysSinceLast}d ago`} · Clarity {clarityScore}/10
+                    </p>
+                  </div>
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${
+                    urgency > 1.5
+                      ? 'bg-rose-100 text-rose-600'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    <RotateCcw size={11} />
+                    {urgency > 1.5 ? 'Overdue' : 'Due'}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
-              const subGroups = SUB_LEVELS
-                .filter((s) => SUB_LEVEL_META[s].parent === level)
-                .map((s) => ({ sl: s, items: levelLessons.filter((l) => l.subLevel === s) }))
-                .filter((g) => g.items.length > 0)
+        {/* ── Feynman Method Card ─────────────────────────────────── */}
+        <AnimatePresence>
+          {methodCardVisible && (
+            <motion.div
+              key="method-card"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-5 overflow-hidden">
+                {/* dismiss */}
+                <button
+                  onClick={dismissMethodCard}
+                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/20 flex items-center justify-center"
+                >
+                  <X size={13} className="text-white" />
+                </button>
 
-              return (
-                <div key={level}>
-                  {/* Level header */}
-                  <div className={`rounded-2xl bg-gradient-to-r ${c.gradient} border ${c.border} px-4 py-3 mb-2`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{LEVEL_EMOJI[level]}</span>
-                        <p className={`font-bold text-sm ${c.text}`}>{getLevelLabel(level)}</p>
+                {/* decorative blobs */}
+                <div className="absolute -bottom-4 -right-4 w-28 h-28 bg-white/10 rounded-full" />
+                <div className="absolute -top-6 -left-6 w-20 h-20 bg-white/10 rounded-full" />
+
+                <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">Why it works</p>
+                <h3 className="text-white font-extrabold text-base mb-3 leading-snug">
+                  The Feynman Technique — learn by teaching
+                </h3>
+
+                <div className="space-y-2 mb-4">
+                  {[
+                    { icon: <BookOpen size={13} />, text: 'Read — absorb a concept deeply' },
+                    { icon: <PenLine  size={13} />, text: 'Explain — teach it in plain words' },
+                    { icon: <Brain    size={13} />, text: 'AI feedback — spot your gaps instantly' },
+                    { icon: <RefreshCw size={13}/>, text: 'Review — reinforce what you missed' },
+                  ].map(({ icon, text }, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0">
+                        {icon}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-slate-500 text-xs">{doneCnt}/{levelLessons.length}</p>
-                      </div>
+                      <p className="text-white/90 text-xs">{text}</p>
                     </div>
-                    <div className="mt-2 h-1.5 bg-white/60 rounded-full overflow-hidden">
+                  ))}
+                </div>
+
+                <a
+                  href="https://youtu.be/tkm0TNFzIeg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all"
+                >
+                  <Play size={12} fill="currentColor" /> Watch 4-min intro
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Course Progress Card ────────────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <button
+            onClick={() => navigate('/lessons')}
+            className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-left hover:border-blue-300 hover:shadow-sm active:scale-[0.99] transition-all"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-slate-800 font-bold text-sm">Course Progress</p>
+              <span className="text-blue-500 text-xs font-semibold flex items-center gap-1">
+                Browse all <ChevronRight size={13} />
+              </span>
+            </div>
+
+            {/* Per-level bars */}
+            <div className="space-y-2.5">
+              {[
+                { level: 'beginner',     emoji: '🌱', label: 'Beginner'     },
+                { level: 'intermediate', emoji: '🌿', label: 'Intermediate' },
+                { level: 'advanced',     emoji: '🌳', label: 'Advanced'     },
+              ].map(({ level, emoji, label }) => {
+                const c       = getLevelColor(level)
+                const lvl     = lessons.filter((l) => l.level === level)
+                const done    = lvl.filter((l) => completedLessons.includes(l.id)).length
+                const pct     = lvl.length ? Math.round((done / lvl.length) * 100) : 0
+                return (
+                  <div key={level}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-slate-600 text-xs flex items-center gap-1.5">
+                        {emoji} {label}
+                      </span>
+                      <span className="text-slate-400 text-xs tabular-nums">{done}/{lvl.length}</span>
+                    </div>
+                    <div className="h-1.5 bg-app-border rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${c.dot} transition-all`} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
+                )
+              })}
+            </div>
 
-                  {/* Sub-level groups */}
-                  {subGroups.map(({ sl, items }) => {
-                    const sc = getSubLevelColor(sl)
-                    const meta = SUB_LEVEL_META[sl]
-                    return (
-                      <div key={sl} className="mb-3">
-                        <div className="flex items-center gap-2 mb-1.5 pl-1">
-                          <span className={`${sc.bg} ${sc.text} text-xs font-bold px-2 py-0.5 rounded-md border ${sc.border}`}>
-                            {meta.label}
-                          </span>
-                          <span className="text-slate-400 text-xs">{meta.desc}</span>
-                        </div>
-                        <div className="space-y-2">
-                          {items.map((lesson) => {
-                            const done = completedLessons.includes(lesson.id)
-                            return (
-                              <button
-                                key={lesson.id}
-                                onClick={() => navigate(`/lesson/${lesson.id}`)}
-                                className={`w-full flex items-center gap-3 bg-app-card border rounded-2xl px-4 py-3 text-left transition-all duration-200 ${
-                                  done ? 'border-emerald-200 bg-emerald-50/30' : 'border-app-border hover:border-blue-300 hover:shadow-sm active:scale-[0.99]'
-                                }`}
-                              >
-                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 ${
-                                  done ? 'bg-emerald-50' : 'bg-app-surface'
-                                }`}>
-                                  {lesson.icon}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-slate-800 text-sm font-semibold truncate">{lesson.title}</p>
-                                  <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className="text-slate-400 text-xs">{lesson.category}</span>
-                                    <span className="text-slate-300 text-xs">·</span>
-                                    <span className="text-slate-400 text-xs">{lesson.estimatedMinutes} min</span>
-                                  </div>
-                                </div>
-                                {done
-                                  ? <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                                      <span className="text-emerald-500 text-xs font-bold">✓</span>
-                                    </div>
-                                  : <ChevronRight size={15} className="text-slate-400 flex-shrink-0" />
-                                }
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )
-            })}
-          </div>
+            <p className="text-slate-400 text-xs mt-3">
+              {completedLessons.length} of {lessons.length} lessons completed
+            </p>
+          </button>
         </motion.div>
 
-        {/* spacer so last card is never hidden behind the fixed nav */}
-        <div className="h-32" />
+        <div className="h-8" />
       </div>
 
       <BottomNav />
