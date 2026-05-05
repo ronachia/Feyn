@@ -120,7 +120,7 @@ export default function Practice() {
   // ── Error ──────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-36">
+      <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-48">
         <div className="px-6 pt-12 pb-6">
           <button onClick={() => navigate('/home')} className="flex items-center gap-2 text-gray-400 mb-6">
             <ArrowLeft size={18} /> Back
@@ -142,7 +142,7 @@ export default function Practice() {
   // ── Done ───────────────────────────────────────────────────
   if (done) {
     return (
-      <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-36">
+      <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-48">
         <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-6">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
             <span className="text-8xl">🏆</span>
@@ -175,7 +175,7 @@ export default function Practice() {
 
   // ── Exercise ───────────────────────────────────────────────
   return (
-    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-36">
+    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-48">
       <XPToast xp={toastXP} visible={showToast} />
 
       {/* Header */}

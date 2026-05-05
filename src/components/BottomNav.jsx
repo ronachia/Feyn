@@ -18,7 +18,7 @@ export default function BottomNav() {
   ]
 
   return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       {/* Upgrade pill for free users */}
       {!isPremium && (
         <div className="mx-4 mb-2 flex justify-center">
@@ -31,7 +31,7 @@ export default function BottomNav() {
         </div>
       )}
 
-      <div className="mx-4 mb-4 bg-white border border-app-border rounded-3xl px-2 py-2 flex items-center justify-around" style={{boxShadow:'0 -2px 16px rgba(37,99,235,0.12)'}}>
+      <div className="mx-4 mb-3 bg-white border border-app-border rounded-3xl px-2 py-2 flex items-center justify-around" style={{boxShadow:'0 -2px 16px rgba(37,99,235,0.12)'}}>
         {tabs.map(({ path, icon: Icon, label }) => {
           const active = location.pathname === path
             || (path === '/lessons' && location.pathname.startsWith('/lesson'))

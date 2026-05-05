@@ -184,7 +184,7 @@ export default function LessonsList() {
   const showGrouped = tab === 'library' && !search
 
   return (
-    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-36">
+    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-48">
       {/* Header */}
       <div className="px-6 pt-12 pb-4">
         <div className="flex items-center justify-between mb-5">

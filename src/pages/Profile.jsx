@@ -57,7 +57,7 @@ export default function Profile() {
     : 0
 
   return (
-    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-40">
+    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-48">
       {/* ── Header ───────────────────────────────────────────────── */}
       <div className="px-6 pt-12 pb-6">
         <h1 className="text-2xl font-bold text-slate-800">Profile</h1>

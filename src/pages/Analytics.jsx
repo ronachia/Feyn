@@ -98,7 +98,7 @@ export default function Analytics() {
   const hasData = sessionHistory.length > 0
 
   return (
-    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-36">
+    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-48">
       {/* Header */}
       <div className="flex items-center gap-4 px-6 pt-12 pb-6">
         <button onClick={() => navigate('/home')} className="w-9 h-9 rounded-full bg-app-card flex items-center justify-center">

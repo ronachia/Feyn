@@ -97,7 +97,7 @@ Content: ${source.slice(0, 2000)}`,
   }
 
   return (
-    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-36">
+    <div className="app-shell flex flex-col min-h-screen bg-app-bg pb-48">
       {/* Header */}
       <div className="flex items-center gap-4 px-6 pt-12 pb-4">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-app-card flex items-center justify-center">
