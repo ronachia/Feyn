@@ -895,15 +895,19 @@ function ReadPhase({ lesson, timeLeft, onReady }) {
           <h3 className="text-slate-800 font-bold text-lg">🎥 Watch the video</h3>
           <div className="rounded-2xl overflow-hidden border border-app-border" style={{ aspectRatio: '16/9' }}>
             <iframe
-              src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+              src={`https://www.youtube.com/embed/${videoId}?rel=0&cc_load_policy=1&cc_lang_pref=en&hl=en`}
               title={lesson.title}
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           </div>
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-            <p className="text-amber-400 text-xs font-semibold">💡 Watch once — then explain from memory</p>
+          <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+            <span className="text-lg">💡</span>
+            <div>
+              <p className="text-amber-400 text-xs font-semibold">Watch once — then explain from memory</p>
+              <p className="text-gray-500 text-xs">English subtitles enabled. Click the CC button if not visible.</p>
+            </div>
           </div>
         </div>
       )}
