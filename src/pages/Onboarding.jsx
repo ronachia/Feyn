@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, ArrowLeft } from 'lucide-react'
 import useAppStore from '../store/useAppStore'
-import { useAuth } from '../contexts/AuthContext'
+import { useUser } from '@clerk/clerk-react'
 import useProgressSync from '../hooks/useProgressSync'
 
 const GOALS = [
@@ -38,14 +38,14 @@ const TOTAL_STEPS = 4
 export default function Onboarding() {
   const navigate  = useNavigate()
   const setUser   = useAppStore((s) => s.setUser)
-  const { authUser } = useAuth()
+  const { user } = useUser()
   const { syncProfile } = useProgressSync()
   const [step, setStep]   = useState(0)
   const [goal, setGoal]   = useState(null)
   const [level, setLevel] = useState(null)
 
   const handleFinish = async () => {
-    const profile = { goal, level, onboardedAt: new Date().toISOString(), email: authUser?.email }
+    const profile = { goal, level, onboardedAt: new Date().toISOString(), email: user?.primaryEmailAddress?.emailAddress }
     setUser(profile)
     await syncProfile({ goal, level, language: 'en', onboarded_at: profile.onboardedAt })
     navigate('/placement')

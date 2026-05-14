@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, CheckCircle, XCircle } from 'lucide-react'
 import { PLACEMENT_QUESTIONS, calculatePlacementLevel } from '../data/placementTest'
 import useAppStore from '../store/useAppStore'
-import { useAuth } from '../contexts/AuthContext'
+import { useUser } from '@clerk/clerk-react'
 import useProgressSync from '../hooks/useProgressSync'
 
 const LEVEL_LABELS = {
@@ -27,7 +27,7 @@ export default function PlacementTest() {
   const navigate   = useNavigate()
   const setUser    = useAppStore((s) => s.setUser)
   const user       = useAppStore((s) => s.user)
-  const { authUser } = useAuth()
+  const { user: clerkUser } = useUser()
   const { syncProfile } = useProgressSync()
 
   const [current, setCurrent]       = useState(0)

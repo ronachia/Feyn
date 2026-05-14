@@ -1,42 +1,27 @@
 import { useCallback } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import { saveUserProgress, saveUserProfile } from '../services/supabase'
+import { useUser } from '@clerk/clerk-react'
 import useAppStore from '../store/useAppStore'
 
+// TODO: Implementar sync com backend quando tiver API
+// Por enquanto, dados ficam apenas no localStorage via Zustand persist
+
 export default function useProgressSync() {
-  const { authUser } = useAuth()
+  const { user, isSignedIn } = useUser()
 
   const syncProgress = useCallback(async () => {
-    if (!authUser || authUser.isLocal) return
-    const s = useAppStore.getState()
-    try {
-      await saveUserProgress(authUser.id, {
-        xp:                   s.xp,
-        streak:               s.streak,
-        last_session_date:    s.lastSessionDate,
-        completed_lessons:    s.completedLessons,
-        gaps:                 s.gaps,
-        session_history:      s.sessionHistory,
-        earned_badges:        s.earnedBadges,
-        no_peek_count:        s.noPeekCount,
-        high_clarity_count:   s.highClarityCount,
-        fixed_gaps:           s.fixedGaps,
-        daily_stats:          s.dailyStats,
-        custom_lessons:       s.customLessons,
-      })
-    } catch (err) {
-      console.error('Progress sync failed:', err)
-    }
-  }, [authUser])
+    if (!isSignedIn || !user) return
+    // TODO: Sync com seu backend quando implementar
+    // const s = useAppStore.getState()
+    // await api.saveProgress(user.id, { ... })
+    console.log('Progress sync - Clerk user:', user.id)
+  }, [isSignedIn, user])
 
   const syncProfile = useCallback(async (profileData) => {
-    if (!authUser || authUser.isLocal) return
-    try {
-      await saveUserProfile(authUser.id, profileData)
-    } catch (err) {
-      console.error('Profile sync failed:', err)
-    }
-  }, [authUser])
+    if (!isSignedIn || !user) return
+    // TODO: Sync com seu backend quando implementar
+    // await api.saveProfile(user.id, profileData)
+    console.log('Profile sync - Clerk user:', user.id, profileData)
+  }, [isSignedIn, user])
 
   return { syncProgress, syncProfile }
 }

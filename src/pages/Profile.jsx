@@ -9,7 +9,7 @@ import { getLessonById } from '../data/lessons'
 import { BADGES, getLevelInfo } from '../data/badges'
 import BottomNav from '../components/BottomNav'
 import useNotifications from '../hooks/useNotifications'
-import { useAuth } from '../contexts/AuthContext'
+import { useUser, useClerk } from '@clerk/clerk-react'
 import useProgressSync from '../hooks/useProgressSync'
 
 export default function Profile() {
@@ -23,7 +23,8 @@ export default function Profile() {
   } = useAppStore()
   const levelInfo = getLevelInfo(xp || 0)
   const { notificationsEnabled, isSupported, enable, disable } = useNotifications()
-  const { authUser, signOut } = useAuth()
+  const { user, isSignedIn } = useUser()
+  const { signOut } = useClerk()
   const { syncProfile } = useProgressSync()
 
   const handleLanguageChange = (lang) => {
@@ -33,8 +34,7 @@ export default function Profile() {
   }
 
   const handleSignOut = async () => {
-    await signOut()
-    navigate('/auth', { replace: true })
+    await signOut({ redirectUrl: '/auth' })
   }
 
   const [apiKeyInput, setApiKeyInput]   = useState(openaiKey)
@@ -66,14 +66,16 @@ export default function Profile() {
 
       <div className="px-6 space-y-5">
         {/* ── Account ───────────────────────────────────────────────── */}
-        {authUser && (
+        {isSignedIn && user && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             <div className="bg-app-card border border-app-border rounded-2xl px-4 py-3 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-lg glow-purple flex-shrink-0">
-                {authUser.email?.[0]?.toUpperCase() ?? '?'}
+                {user.firstName?.[0]?.toUpperCase() || user.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase() || '?'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-slate-800 text-sm font-semibold truncate">{authUser.email}</p>
+                <p className="text-slate-800 text-sm font-semibold truncate">
+                  {user.firstName || user.emailAddresses?.[0]?.emailAddress}
+                </p>
                 <p className="text-gray-500 text-xs">Synced across devices ✓</p>
               </div>
               <button onClick={handleSignOut} className="flex items-center gap-1.5 text-gray-500 text-xs hover:text-rose-400 transition-colors">
