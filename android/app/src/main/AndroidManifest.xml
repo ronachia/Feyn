@@ -38,4 +38,10 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Voice Mode (Whisper transcription) records audio via getUserMedia()
+         inside the WebView; see MainActivity's onPermissionRequest handler
+         for the runtime permission grant that also has to happen. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>

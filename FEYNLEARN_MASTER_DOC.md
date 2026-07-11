@@ -1,5 +1,5 @@
 # FeynLearn — Master Document
-> Versão: 1.0 | Última atualização: Junho 2025
+> Versão: 1.1 | Última atualização: Julho 2026 (gateway de pagamento atualizado para Mercado Pago; ver `PARECER_AUDITORIA_MOBILE.md` para o parecer técnico completo)
 
 ---
 
@@ -84,13 +84,13 @@ O fluxo de cada lição segue 4 passos:
 | Banco | Supabase (Postgres) — profiles, progress |
 | AI | OpenAI GPT-4o-mini (via Edge Functions) |
 | Voz | Whisper API + Web Speech API |
-| Pagamentos | Asaas (PIX/Boleto/Cartão) |
+| Pagamentos | Mercado Pago (PIX/Boleto/Cartão) |
 | Deploy | Netlify |
 
 ### Segurança (Implementado Jun/2025)
 - ✅ OpenAI API key: servidor (Edge Function secret) — nunca cliente
 - ✅ Todas chamadas AI via Supabase Edge Functions autenticadas (Clerk JWT)
-- ✅ Premium: ativação via webhook Asaas (servidor → servidor)
+- ✅ Premium: ativação via webhook Mercado Pago, servidor → servidor, com verificação HMAC-SHA256
 - ✅ Progresso: sincronizado com Supabase (backup + multi-device)
 
 ### Edge Functions (Supabase)
@@ -102,9 +102,10 @@ O fluxo de cada lição segue 4 passos:
 | `teach-mode` | Teo (AI estudante) |
 | `generate-exercises` | Exercícios personalizados baseados em gaps |
 | `create-lesson` | Gera lições custom via AI |
-| `create-checkout-session` | Checkout Asaas |
-| `asaas-webhook` | Confirma pagamento → ativa premium |
-| `sync-progress` | Salva progresso no Supabase |
+| `create-mercado-pago-checkout` | Checkout único (PIX/Boleto/Cartão) |
+| `create-mercado-pago-subscription` | Assinatura recorrente Premium |
+| `mercado-pago-webhook` | Confirma pagamento (HMAC verificado) → ativa premium |
+| `sync-progress` | Salva progresso no Supabase (não aceita `daily_stats` do client — ver `_shared/rateLimit.ts`) |
 | `get-profile` | Carrega progresso do Supabase |
 
 ---
@@ -130,7 +131,7 @@ O fluxo de cada lição segue 4 passos:
 ### User & Premium
 | Rota | Descrição |
 |------|-----------|
-| `/pricing` | Planos Free vs Premium, checkout Asaas |
+| `/pricing` | Planos Free vs Premium, checkout Mercado Pago |
 | `/profile` | Stats, badges, preferências, idioma, dark mode |
 | `/stats` | Analytics detalhados (progresso ao longo do tempo) |
 
@@ -202,7 +203,7 @@ Home → Seleciona Lição → Read (60s) → Explain → AI Feedback
 
 ### Fluxo 3: Upgrade Premium
 ```
-Pricing → Seleciona Plano → Asaas Checkout (PIX/Boleto/Cartão)
+Pricing → Seleciona Plano → Mercado Pago Checkout (PIX/Boleto/Cartão)
 → Webhook confirma → Premium ativado → Sync progresso
 ```
 
@@ -251,9 +252,13 @@ Home → Ver Gaps → Practice → Exercícios personalizados
 - [x] 19 lições pré-criadas
 - [x] Backend seguro (Edge Functions + Supabase)
 
+### ✅ Concluído (Jul 2026)
+- [x] Migração de pagamento Stripe/Asaas → Mercado Pago (checkout, assinatura, webhook com verificação HMAC)
+- [x] Scaffold Android/Capacitor
+- [x] Correção de bugs críticos: CORS do checkout, bypass do rate limit de IA, Premium gates reforçados no servidor (Voice Mode, Teach Mode, Create Lesson)
+
 ### Em Progresso
-- [ ] Pagamentos Asaas (PIX/Boleto)
-- [ ] App mobile (Capacitor/React Native)
+- [ ] App mobile (Capacitor/React Native) — scaffold existe, faltam ajustes nativos (permissão de mic ✅ feita, notificações via Capacitor ✅ feita, decidir estratégia de ditado por voz)
 - [ ] SRS (Spaced Repetition) para revisão
 
 ### Futuro
@@ -293,7 +298,8 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 # Edge Functions (secrets)
 OPENAI_API_KEY=sk-...
 CLERK_JWKS_URL=https://...
-ASAAS_API_KEY=$aact_...
+MERCADO_PAGO_ACCESS_TOKEN=APP_USR-...
+MERCADO_PAGO_WEBHOOK_SECRET=...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
 ```
 
@@ -319,7 +325,7 @@ netlify deploy
 | Problema | Solução |
 |----------|---------|
 | "Failed to analyze" | Verificar OpenAI key no secret |
-| Premium não ativa | Verificar webhook Asaas |
+| Premium não ativa | Verificar webhook Mercado Pago (assinatura HMAC) |
 | Progresso não sync | Verificar Clerk token, network |
 | Voice não funciona | Permissão de microfone, HTTPS (produção) |
 
