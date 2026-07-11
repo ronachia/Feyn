@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Check, X, Crown, Zap, Mic, BookOpen, Sparkles, Users } from 'lucide-react'
+import { ArrowLeft, Check, X, Crown, Zap, Mic, BookOpen, Sparkles, Users, Loader2 } from 'lucide-react'
 import useAppStore from '../store/useAppStore'
-
-const STRIPE_LINK = import.meta.env.VITE_STRIPE_PAYMENT_LINK || null
+import { callEdgeFunction } from '../services/supabase'
+import useProgressSync from '../hooks/useProgressSync'
+import { openURL } from '../services/platform'
 
 const FREE_FEATURES = [
   { label: 'All 19 library lessons', ok: true  },
   { label: 'Text-based explanations', ok: true  },
-  { label: '3 AI analyses per day',   ok: true  },
+  { label: '2 AI analyses per day',   ok: true  },
   { label: 'XP, levels & badges',     ok: true  },
   { label: 'Voice mode (Whisper AI)', ok: false },
   { label: 'Teach mode (Teo AI)',     ok: false },
@@ -37,27 +38,58 @@ export default function Pricing() {
   const navigate              = useNavigate()
   const [params]              = useSearchParams()
   const { isPremium, activatePremium, remainingAICalls } = useAppStore()
-  const [activated, setActivated] = useState(false)
-  const [billing, setBilling]     = useState('monthly') // 'monthly' | 'yearly'
+  const { loadFromSupabase }  = useProgressSync()
+  const [activated, setActivated]   = useState(false)
+  const [billing, setBilling]       = useState('monthly')
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [verifying, setVerifying]   = useState(false)
+  const pollRef = useRef(null)
 
   useEffect(() => {
-    if (params.get('activated') === 'true' && !isPremium) {
-      activatePremium()
-      setActivated(true)
+    if (params.get('payment') === 'success' && !isPremium) {
+      setVerifying(true)
+      let attempts = 0
+      pollRef.current = setInterval(async () => {
+        attempts++
+        const result = await loadFromSupabase()
+        if (result?.profile?.is_premium) {
+          clearInterval(pollRef.current)
+          activatePremium()
+          setActivated(true)
+          setVerifying(false)
+        } else if (attempts >= 8) {
+          clearInterval(pollRef.current)
+          setVerifying(false)
+        }
+      }, 2000)
     }
+    return () => clearInterval(pollRef.current)
   }, [])
 
-  const price   = billing === 'monthly' ? '$9.99' : '$6.66'
-  const period  = billing === 'monthly' ? '/month' : '/month, billed yearly'
-  const saving  = billing === 'yearly'
+  const price        = billing === 'monthly' ? 'R$49,90' : 'R$598,80'
+  const priceOld     = billing === 'monthly' ? 'R$89,90' : 'R$1.078,80'
+  const period       = billing === 'monthly' ? '/mês' : '/ano (R$49,90/mês)'
+  const saving       = billing === 'yearly'
 
-  const handleCheckout = () => {
-    if (!STRIPE_LINK) {
-      alert('Stripe payment link not configured. Add VITE_STRIPE_PAYMENT_LINK to your .env file.')
-      return
+  const handleCheckout = async () => {
+    setCheckoutLoading(true)
+    try {
+      const { url } = await callEdgeFunction('create-mercado-pago-subscription', { billing })
+      await openURL(url)
+    } catch (err) {
+      alert(err.message || 'Failed to start checkout. Try again.')
+      setCheckoutLoading(false)
     }
-    const successUrl = encodeURIComponent(`${window.location.origin}/pricing?activated=true`)
-    window.location.href = `${STRIPE_LINK}?success_url=${successUrl}`
+  }
+
+  if (verifying) {
+    return (
+      <div className="app-shell flex flex-col min-h-screen bg-app-bg items-center justify-center px-6 text-center gap-4">
+        <Loader2 size={40} className="text-blue-400 animate-spin" />
+        <p className="text-slate-800 font-semibold text-lg">Verifying your payment...</p>
+        <p className="text-gray-400 text-sm">This usually takes a few seconds.</p>
+      </div>
+    )
   }
 
   if (activated || isPremium) {
@@ -148,31 +180,37 @@ export default function Pricing() {
                 billing === b ? 'gradient-primary text-white' : 'text-gray-500'
               }`}
             >
-              {b === 'monthly' ? 'Monthly' : 'Yearly  🔥 Save 33%'}
+              {b === 'monthly' ? 'Mensal' : 'Anual  🔥 -44%'}
             </button>
           ))}
         </div>
 
         {/* Price + CTA */}
         <div className="bg-app-card border border-blue-500/30 rounded-2xl p-5 space-y-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-gray-400 text-sm line-through">{priceOld}</span>
+            <span className="bg-rose-500/20 text-rose-400 text-xs font-bold px-2 py-0.5 rounded-full">🔥 Lançamento</span>
+          </div>
           <div className="flex items-end gap-1">
             <span className="text-slate-800 font-bold text-4xl">{price}</span>
             <span className="text-gray-400 text-sm pb-1">{period}</span>
           </div>
-          {saving && (
-            <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
-              <Zap size={11} className="text-emerald-400" />
-              <span className="text-emerald-400 text-xs font-semibold">You save $39.90/year</span>
-            </div>
-          )}
+          <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
+            <Zap size={11} className="text-emerald-400" />
+            <span className="text-emerald-400 text-xs font-semibold">44% OFF no preço de lançamento</span>
+          </div>
           <button
             onClick={handleCheckout}
-            className="w-full py-4 rounded-2xl gradient-primary text-white font-bold text-lg glow-purple flex items-center justify-center gap-2"
+            disabled={checkoutLoading}
+            className="w-full py-4 rounded-2xl gradient-primary text-white font-bold text-lg glow-purple flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            <Crown size={20} /> Get Premium →
+            {checkoutLoading
+              ? <><Loader2 size={20} className="animate-spin" /> Redirecting...</>
+              : <><Crown size={20} /> Get Premium →</>
+            }
           </button>
           <p className="text-gray-600 text-xs text-center">
-            Cancel anytime · Processed securely by Stripe
+            Cancele quando quiser · Pagamento seguro via Mercado Pago
           </p>
         </div>
 
@@ -216,9 +254,9 @@ export default function Pricing() {
         <div className="space-y-3 pb-4">
           <h2 className="text-slate-800 font-bold text-base">FAQ</h2>
           {[
-            { q: 'Do I need my own OpenAI key?', a: 'Yes — FeynLearn uses your OpenAI key directly so your data stays private and costs are transparent.' },
-            { q: 'Can I cancel anytime?', a: 'Yes. Cancel from your Stripe account at any time. No questions asked.' },
-            { q: 'Is my payment secure?', a: 'All payments go through Stripe — we never store your card details.' },
+            { q: 'How does the AI work?', a: 'FeynLearn uses OpenAI GPT-4o-mini on our secure servers. No API key needed — just subscribe and start learning.' },
+            { q: 'Posso cancelar quando quiser?', a: 'Sim. Cancele a assinatura pelo Mercado Pago a qualquer momento, sem multa.' },
+            { q: 'O pagamento é seguro?', a: 'Todos os pagamentos passam pelo Mercado Pago — nunca armazenamos seus dados de cartão.' },
           ].map(({ q, a }) => (
             <div key={q} className="bg-app-card border border-app-border rounded-xl p-4">
               <p className="text-slate-800 text-sm font-semibold mb-1">{q}</p>

@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react'
+import useLessons from '../hooks/useLessons'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Search, Plus, Trash2, ChevronRight } from 'lucide-react'
-import { lessons, getLevelColor, getLevelLabel, getContentTypeInfo, getSubLevelColor, getSubLevelLabel, SUB_LEVELS, SUB_LEVEL_META } from '../data/lessons'
+import { getLevelColor, getLevelLabel, getContentTypeInfo, getSubLevelColor, getSubLevelLabel, SUB_LEVELS, SUB_LEVEL_META } from '../data/lessonHelpers'
 import useAppStore from '../store/useAppStore'
 import BottomNav from '../components/BottomNav'
 
@@ -158,6 +159,7 @@ function LevelSection({ level, lessonList, completedLessons, deleteCustomLesson,
 export default function LessonsList() {
   const navigate = useNavigate()
   const { completedLessons, customLessons, deleteCustomLesson, isPremium } = useAppStore()
+  const { lessons, loading: lessonsLoading } = useLessons()
   const [search, setSearch] = useState('')
   const [tab, setTab]       = useState('library')
 
@@ -190,7 +192,7 @@ export default function LessonsList() {
         <div className="flex items-center justify-between mb-5">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Lessons</h1>
-            <p className="text-gray-500 text-xs mt-0.5">{lessons.length} lessons · {completedLessons.length} completed</p>
+            <p className="text-gray-500 text-xs mt-0.5">{lessonsLoading ? '...' : lessons.length} lessons · {completedLessons.length} completed</p>
           </div>
           <button
             onClick={() => navigate(isPremium ? '/create' : '/pricing')}

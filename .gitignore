@@ -5,3 +5,5 @@ dist/
 .DS_Store
 *.log
 node_modules
+android/app/src/main/assets/public/
+__MACOSX/

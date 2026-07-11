@@ -6,21 +6,29 @@ import {
   CheckCircle, XCircle, AlertCircle, Eye, EyeOff, Zap
 } from 'lucide-react'
 import useAppStore from '../store/useAppStore'
-import { getLessonById, getLevelColor, getLevelLabel, extractYouTubeId, getContentTypeInfo } from '../data/lessons'
-import { analyzeExplanation } from '../services/openai'
+import { getLevelColor, getLevelLabel, extractYouTubeId, getContentTypeInfo } from '../data/lessonHelpers'
+import useLessons from '../hooks/useLessons'
+import { analyzeExplanation } from '../services/ai'
 import { analyzeFluency } from '../services/whisper'
 import { getStudentQuestion } from '../services/teachMode'
+import { createSpeechRecognizer } from '../services/platform'
 import XPToast from '../components/XPToast'
 import VoiceRecorder from '../components/VoiceRecorder'
 import useProgressSync from '../hooks/useProgressSync'
+import useAnalytics from '../hooks/useAnalytics'
+import LessonRead from '../components/lesson/LessonRead'
+import LessonFeedback from '../components/lesson/LessonFeedback'
+import LessonTeaching from '../components/lesson/LessonTeaching'
 
 const READING_TIME = 60
 
 export default function Lesson() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { openaiKey, completeLesson, addGaps, addSession, earnXP, calculateSessionXP, recordSessionStats, streak, customLessons, isPremium, checkAndIncrementAI, remainingAICalls } = useAppStore()
+  const { completeLesson, addGaps, addSession, earnXP, calculateSessionXP, recordSessionStats, streak, customLessons, isPremium, checkAndIncrementAI, remainingAICalls } = useAppStore()
   const { syncProgress } = useProgressSync()
+  const { getLessonById, loading: lessonsLoading } = useLessons()
+  const analytics = useAnalytics()
 
   const lesson = getLessonById(id) || customLessons.find((l) => l.id === id)
 
@@ -49,8 +57,12 @@ export default function Lesson() {
   const textareaRef    = useRef(null)
 
   useEffect(() => {
-    if (!lesson) navigate('/home')
-  }, [lesson, navigate])
+    if (!lessonsLoading && !lesson) navigate('/home')
+  }, [lesson, lessonsLoading, navigate])
+
+  useEffect(() => {
+    if (lesson && phase === 'read') analytics.lessonStarted(lesson)
+  }, [phase, lesson?.id])
 
   // Reading timer
   useEffect(() => {
@@ -70,27 +82,15 @@ export default function Lesson() {
   }, [phase])
 
   const startRecording = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) {
+    const recognition = createSpeechRecognizer({
+      onResult: (transcript) => setExplanation(transcript),
+      onError:  () => setIsRecording(false),
+      onEnd:    () => setIsRecording(false),
+    })
+    if (!recognition) {
       setError('Voice recognition is not supported in your browser. Please type your explanation.')
       return
     }
-    const recognition = new SpeechRecognition()
-    recognition.lang = 'en-US'
-    recognition.continuous = true
-    recognition.interimResults = true
-
-    recognition.onresult = (e) => {
-      const transcript = Array.from(e.results)
-        .map((r) => r[0].transcript)
-        .join(' ')
-      setExplanation(transcript)
-    }
-    recognition.onerror = () => {
-      setIsRecording(false)
-    }
-    recognition.onend = () => setIsRecording(false)
-
     recognitionRef.current = recognition
     recognition.start()
     setIsRecording(true)
@@ -106,31 +106,33 @@ export default function Lesson() {
       setError('Write at least a few sentences about what you read.')
       return
     }
-    if (!openaiKey) {
-      setError('No OpenAI API key set. Please add it in your Profile settings.')
-      return
-    }
     if (!checkAndIncrementAI()) {
-      navigate('/pricing')
+      setError('LIMIT_REACHED')
+      analytics.analysisFailed(lesson, 'LIMIT_REACHED')
       return
     }
     setError(null)
     setIsAnalyzing(true)
     setPhase('analyzing')
+    analytics.analysisRequested(lesson, inputMode)
 
     try {
       const result = await analyzeExplanation({
         originalContent: lesson.content,
         userExplanation: explanation,
         keyPoints: lesson.keyPoints,
-        apiKey: openaiKey,
       })
       setFeedback(result)
-      if (result.gaps?.length) addGaps(result.gaps)
+      if (result.gaps?.length) {
+        addGaps(result.gaps)
+        result.gaps.forEach((g) => analytics.gapDetected(g, lesson.id))
+      }
+      analytics.analysisPassed(lesson, result)
       addSession({ lessonId: lesson.id, clarityScore: result.clarityScore, coverageScore: result.coverageScore })
       setPhase('feedback')
     } catch (err) {
-      setError('Failed to analyze. Check your API key in Profile.')
+      analytics.analysisFailed(lesson, 'API_ERROR')
+      setError('Failed to analyze. Please try again.')
       setPhase('explain')
     } finally {
       setIsAnalyzing(false)
@@ -147,11 +149,12 @@ export default function Lesson() {
     })
     earnXP(xp)
     recordSessionStats({ clarityScore: feedback?.clarityScore || 0, peeked })
+    analytics.lessonCompleted(lesson, { clarityScore: feedback?.clarityScore, coverageScore: feedback?.coverageScore, xp })
     setSessionXP(xp)
     setShowXPToast(true)
     setTimeout(() => setShowXPToast(false), 2500)
     setPhase('complete')
-    setTimeout(() => syncProgress(), 500)
+    syncProgress().catch((e) => console.error('syncProgress failed:', e))
   }
 
   const handleTryAgain = () => {
@@ -166,12 +169,10 @@ export default function Lesson() {
   const handleVoiceTranscript = async (text) => {
     setExplanation(text)
     setInputMode('text')
-    if (openaiKey) {
-      try {
-        const f = await analyzeFluency({ text, duration: 0, apiKey: openaiKey })
-        setFluency(f)
-      } catch { /* fluency analysis is optional */ }
-    }
+    try {
+      const f = await analyzeFluency({ text, duration: 0 })
+      setFluency(f)
+    } catch { /* fluency analysis is optional */ }
   }
 
   const startTeaching = async () => {
@@ -180,7 +181,7 @@ export default function Lesson() {
     setTeachHistory([])
     setTeachRound(0)
     try {
-      const res = await getStudentQuestion({ topic: lesson.title, explanation, history: [], round: 0, apiKey: openaiKey })
+      const res = await getStudentQuestion({ topic: lesson.title, explanation, history: [], round: 0 })
       setTeachHistory([{ role: 'student', content: res.question }])
       setTeachRound(1)
     } catch { setPhase('feedback') }
@@ -195,7 +196,7 @@ export default function Lesson() {
     setTeachInput('')
     setTeachLoading(true)
     try {
-      const res = await getStudentQuestion({ topic: lesson.title, explanation, history: newHistory, round: teachRound, apiKey: openaiKey })
+      const res = await getStudentQuestion({ topic: lesson.title, explanation, history: newHistory, round: teachRound })
       setTeachHistory([...newHistory, { role: 'student', content: res.question, isFinal: res.concluded }])
       if (res.concluded) {
         setTeachScore(res.masteryScore)
@@ -290,7 +291,7 @@ export default function Lesson() {
           {/* READ */}
           {phase === 'read' && (
             <Phase key="read">
-              <ReadPhase lesson={lesson} timeLeft={timeLeft} onReady={() => setPhase('explain')} />
+              <LessonRead lesson={lesson} timeLeft={timeLeft} onReady={() => setPhase('explain')} />
             </Phase>
           )}
 
@@ -355,7 +356,6 @@ export default function Lesson() {
                 {/* VOICE MODE */}
                 {inputMode === 'voice' && (
                   <VoiceRecorder
-                    apiKey={openaiKey}
                     onTranscript={handleVoiceTranscript}
                   />
                 )}
@@ -370,20 +370,48 @@ export default function Lesson() {
                         onChange={(e) => setExplanation(e.target.value)}
                         placeholder="Explain in English... e.g. 'The text talks about...'"
                         rows={7}
-                        className="w-full bg-app-card border border-app-border rounded-2xl p-4 text-gray-700 text-sm placeholder-gray-600 resize-none focus:border-blue-500/60 transition-colors"
+                        className="w-full bg-app-card border border-app-border rounded-2xl p-4 pr-12 text-gray-700 text-sm placeholder-gray-600 resize-none focus:border-blue-500/60 transition-colors"
                       />
+                      <button
+                        onClick={isRecording ? stopRecording : startRecording}
+                        className={`absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
+                          isRecording
+                            ? 'bg-rose-500/20 border border-rose-500/40 text-rose-400 animate-pulse'
+                            : 'bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20'
+                        }`}
+                        title={isRecording ? 'Stop recording' : 'Speak your explanation'}
+                      >
+                        {isRecording ? <MicOff size={15} /> : <Mic size={15} />}
+                      </button>
                       <div className="absolute bottom-3 right-3 text-gray-600 text-xs">{wordCount} words</div>
                     </div>
+                    {isRecording && (
+                      <p className="text-rose-400 text-xs text-center animate-pulse">🎙️ Listening... speak now</p>
+                    )}
 
-                    {error && (
+                    {error === 'LIMIT_REACHED' ? (
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
+                        <span className="text-xl">⚡</span>
+                        <div className="flex-1">
+                          <p className="text-amber-400 font-semibold text-sm">Daily limit reached</p>
+                          <p className="text-gray-500 text-xs mt-0.5 mb-3">Free plan: 3 AI analyses per day. Your explanation is saved.</p>
+                          <button
+                            onClick={() => navigate('/pricing')}
+                            className="w-full gradient-primary text-white text-sm font-semibold py-2.5 rounded-xl"
+                          >
+                            👑 Upgrade to Premium — Unlimited
+                          </button>
+                        </div>
+                      </div>
+                    ) : error ? (
                       <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
                         <p className="text-rose-400 text-sm">{error}</p>
                       </div>
-                    )}
+                    ) : null}
 
                     <button
                       onClick={handleSubmit}
-                      disabled={wordCount < 5}
+                      disabled={wordCount < 5 || error === 'LIMIT_REACHED'}
                       className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold transition-all ${
                         wordCount >= 5
                           ? 'gradient-primary text-white glow-purple'
@@ -444,13 +472,12 @@ export default function Lesson() {
           {/* FEEDBACK */}
           {phase === 'feedback' && feedback && (
             <Phase key="feedback">
-              <FeedbackView
+              <LessonFeedback
                 feedback={feedback}
                 onTryAgain={handleTryAgain}
                 onComplete={handleComplete}
                 onTeach={isPremium ? startTeaching : () => navigate('/pricing')}
                 isPremium={isPremium}
-                userExplanation={explanation}
                 fluency={fluency}
               />
             </Phase>
@@ -459,7 +486,7 @@ export default function Lesson() {
           {/* TEACHING */}
           {phase === 'teaching' && (
             <Phase key="teaching">
-              <TeachingPhase
+              <LessonTeaching
                 history={teachHistory}
                 round={teachRound}
                 input={teachInput}
@@ -557,416 +584,11 @@ function Phase({ children }) {
   )
 }
 
-function ScoreBar({ value, max = 10, color }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-2 bg-app-border rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${(value / max) * 100}%` }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className={`h-full rounded-full ${color}`}
-        />
-      </div>
-      <span className="text-slate-800 font-bold text-sm w-6 text-right">{value}</span>
-    </div>
-  )
-}
-
 function ScoreCard({ label, value, color }) {
   return (
     <div className="bg-app-card border border-app-border rounded-2xl p-4 text-center">
       <p className={`text-3xl font-bold ${color}`}>{value}<span className="text-sm text-gray-500">/10</span></p>
       <p className="text-gray-400 text-xs mt-1">{label}</p>
-    </div>
-  )
-}
-
-function FeedbackView({ feedback, onTryAgain, onComplete, onTeach, isPremium, userExplanation, fluency }) {
-  const [showSuggested, setShowSuggested] = useState(false)
-
-  return (
-    <div className="pt-2 space-y-5">
-      <div>
-        <h3 className="text-slate-800 font-bold text-lg mb-1">🤖 AI Feedback</h3>
-        <p className="text-gray-400 text-sm">Here's exactly where you are and what to improve.</p>
-      </div>
-
-      {/* Scores */}
-      <div className="bg-app-card border border-app-border rounded-2xl p-4 space-y-3">
-        <div>
-          <div className="flex justify-between mb-1">
-            <span className="text-gray-400 text-sm">Clarity</span>
-            <span className="text-blue-400 text-xs font-medium">How simple & clear</span>
-          </div>
-          <ScoreBar value={feedback.clarityScore} color="bg-blue-500" />
-        </div>
-        <div>
-          <div className="flex justify-between mb-1">
-            <span className="text-gray-400 text-sm">Coverage</span>
-            <span className="text-cyan-400 text-xs font-medium">Key points covered</span>
-          </div>
-          <ScoreBar value={feedback.coverageScore} color="bg-cyan-500" />
-        </div>
-      </div>
-
-      {/* Positive note */}
-      {feedback.positiveNote && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3">
-          <CheckCircle size={18} className="text-emerald-400 mt-0.5 flex-shrink-0" />
-          <p className="text-emerald-300 text-sm">{feedback.positiveNote}</p>
-        </div>
-      )}
-
-      {/* Grammar Errors */}
-      {feedback.grammarErrors?.length > 0 && (
-        <div>
-          <p className="text-rose-400 text-sm font-semibold mb-2 flex items-center gap-2">
-            <XCircle size={15} /> Grammar to Fix ({feedback.grammarErrors.length})
-          </p>
-          <div className="space-y-2">
-            {feedback.grammarErrors.map((err, i) => (
-              <div key={i} className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-rose-400 text-xs line-through">"{err.error}"</span>
-                  <span className="text-gray-500">→</span>
-                  <span className="text-emerald-400 text-xs font-medium">"{err.correction}"</span>
-                </div>
-                <p className="text-gray-400 text-xs">{err.tip}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Missed Points */}
-      {feedback.missedPoints?.length > 0 && (
-        <div>
-          <p className="text-amber-400 text-sm font-semibold mb-2 flex items-center gap-2">
-            <AlertCircle size={15} /> Points You Missed
-          </p>
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 space-y-1">
-            {feedback.missedPoints.map((pt, i) => (
-              <p key={i} className="text-amber-300 text-sm flex items-start gap-2">
-                <span className="mt-1 flex-shrink-0">•</span> {pt}
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Gaps */}
-      {feedback.gaps?.length > 0 && (
-        <div>
-          <p className="text-gray-400 text-sm font-semibold mb-2">🎯 Gaps to work on</p>
-          <div className="flex flex-wrap gap-2">
-            {feedback.gaps.map((gap, i) => (
-              <span key={i} className="bg-blue-500/20 text-blue-300 text-xs px-3 py-1.5 rounded-full capitalize">
-                {gap}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Simplification tip */}
-      {feedback.simplificationTip && (
-        <div className="bg-app-card border border-cyan-500/20 rounded-2xl p-4">
-          <p className="text-cyan-400 text-sm font-semibold mb-1">💡 Simplify it</p>
-          <p className="text-gray-600 text-sm">{feedback.simplificationTip}</p>
-        </div>
-      )}
-
-      {/* Suggested explanation */}
-      <div>
-        <button
-          onClick={() => setShowSuggested(!showSuggested)}
-          className="flex items-center gap-2 text-blue-400 text-sm font-medium"
-        >
-          {showSuggested ? <EyeOff size={15} /> : <Eye size={15} />}
-          {showSuggested ? 'Hide' : 'See'} Feynman model explanation
-        </button>
-        {showSuggested && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="mt-2 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4"
-          >
-            <p className="text-gray-600 text-sm leading-relaxed">{feedback.suggestedExplanation}</p>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Fluency panel (if used voice) */}
-      {fluency && (
-        <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-cyan-400 text-sm font-semibold">🎙️ Fluency Analysis</p>
-            <span className="text-cyan-400 font-bold text-sm">{fluency.fluencyScore}/10</span>
-          </div>
-          {fluency.wpm && <p className="text-gray-400 text-xs">{fluency.pacingFeedback}</p>}
-          {fluency.fillerCount > 0 && <p className="text-gray-500 text-xs">Filler words detected: {fluency.fillerCount}</p>}
-          <p className="text-gray-600 text-xs">💡 {fluency.strength}</p>
-          {fluency.improvements?.map((tip, i) => (
-            <p key={i} className="text-gray-500 text-xs">• {tip}</p>
-          ))}
-        </div>
-      )}
-
-      {/* Teach Someone CTA */}
-      <button
-        onClick={onTeach}
-        className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-300 font-semibold"
-      >
-        <span className="text-xl">🧑‍🎓</span>
-        <div className="text-left flex-1">
-          <p className="text-sm font-semibold">Teach the Student</p>
-          <p className="text-blue-400 text-xs">Teo asks questions to deepen your understanding</p>
-        </div>
-        {!isPremium && <span className="text-base">👑</span>}
-      </button>
-
-      {/* Actions */}
-      <div className="flex gap-3 pb-4">
-        <button
-          onClick={onTryAgain}
-          className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-app-card border border-app-border text-gray-600 font-medium"
-        >
-          <RotateCcw size={16} />
-          Try Again
-        </button>
-        <button
-          onClick={onComplete}
-          className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl gradient-primary text-white font-semibold glow-purple"
-        >
-          Complete <ChevronRight size={16} />
-        </button>
-      </div>
-    </div>
-  )
-}
-
-function TeachingPhase({ history, round, input, onInput, onSend, loading, score, summary, onComplete }) {
-  const chatEndRef = useRef(null)
-
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [history, loading])
-
-  const concluded = score !== null
-
-  return (
-    <div className="pt-2 flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-xl">🧑‍🎓</div>
-        <div>
-          <p className="text-slate-800 font-semibold text-sm">Teo (AI Student)</p>
-          <p className="text-gray-500 text-xs">
-            {concluded ? 'Session complete!' : `Round ${Math.min(round, 3)} of 3 — answer the student's question`}
-          </p>
-        </div>
-        {!concluded && (
-          <div className="ml-auto flex gap-1">
-            {[1,2,3].map((r) => (
-              <div key={r} className={`w-2 h-2 rounded-full ${r <= round ? 'bg-blue-500' : 'bg-app-border'}`} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Mastery score banner */}
-      {concluded && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mb-4 gradient-primary rounded-2xl p-4 glow-purple text-center"
-        >
-          <p className="text-blue-200 text-xs mb-1">Teaching Mastery</p>
-          <p className="text-slate-800 font-bold text-3xl">{score}<span className="text-sm text-blue-200">/10</span></p>
-          {summary && <p className="text-blue-200 text-xs mt-1 leading-tight">"{summary}"</p>}
-          <p className="text-blue-200 text-xs mt-2">+{Math.round(score * 10)} XP earned!</p>
-        </motion.div>
-      )}
-
-      {/* Chat bubbles */}
-      <div className="flex-1 space-y-3 overflow-y-auto mb-4 max-h-80 pr-1">
-        {history.length === 0 && loading && (
-          <div className="flex gap-3 items-end">
-            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-sm flex-shrink-0">🧑‍🎓</div>
-            <div className="bg-app-card border border-app-border rounded-2xl rounded-bl-sm px-4 py-3">
-              <motion.div className="flex gap-1" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}>
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-              </motion.div>
-            </div>
-          </div>
-        )}
-        {history.map((msg, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex gap-3 items-end ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
-          >
-            {msg.role === 'student' && (
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${msg.isFinal ? 'gradient-primary' : 'bg-blue-500/20'}`}>
-                🧑‍🎓
-              </div>
-            )}
-            <div className={`max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-              msg.role === 'user'
-                ? 'gradient-primary text-white rounded-br-sm'
-                : 'bg-app-card border border-app-border text-gray-700 rounded-bl-sm'
-            }`}>
-              {msg.content}
-            </div>
-          </motion.div>
-        ))}
-        {history.length > 0 && loading && (
-          <div className="flex gap-3 items-end">
-            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-sm flex-shrink-0">🧑‍🎓</div>
-            <div className="bg-app-card border border-app-border rounded-2xl rounded-bl-sm px-4 py-3">
-              <motion.div className="flex gap-1" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}>
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-              </motion.div>
-            </div>
-          </div>
-        )}
-        <div ref={chatEndRef} />
-      </div>
-
-      {/* Input or Complete */}
-      {concluded ? (
-        <button
-          onClick={onComplete}
-          className="w-full py-4 rounded-2xl gradient-primary text-white font-semibold glow-purple flex items-center justify-center gap-2"
-        >
-          Complete Lesson <ChevronRight size={18} />
-        </button>
-      ) : (
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => onInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && onSend()}
-            placeholder="Answer Teo's question..."
-            disabled={loading || history.length === 0}
-            className="flex-1 bg-app-card border border-app-border rounded-2xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-blue-500/60 transition-colors disabled:opacity-50"
-          />
-          <button
-            onClick={onSend}
-            disabled={!input.trim() || loading || history.length === 0}
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all ${
-              input.trim() && !loading ? 'gradient-primary glow-purple' : 'bg-app-card border border-app-border'
-            }`}
-          >
-            <Send size={18} className={input.trim() && !loading ? 'text-slate-800' : 'text-gray-600'} />
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ReadPhase({ lesson, timeLeft, onReady }) {
-  const type    = lesson.type || 'text'
-  const videoId = extractYouTubeId(lesson.videoUrl)
-
-  return (
-    <div className="pt-2 space-y-5">
-      {/* Timer — only for text */}
-      {type === 'text' && (
-        <div className="flex items-center justify-between">
-          <h3 className="text-slate-800 font-bold text-lg">📖 Read carefully</h3>
-          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${
-            timeLeft <= 15 ? 'bg-rose-500/20 text-rose-400' : 'bg-app-card text-cyan-400'
-          }`}>
-            ⏱ {timeLeft}s
-          </div>
-        </div>
-      )}
-
-      {/* ── VIDEO ─────────────────────────────────────────────── */}
-      {type === 'video' && videoId && (
-        <div className="space-y-4">
-          <h3 className="text-slate-800 font-bold text-lg">🎥 Watch the video</h3>
-          <div className="rounded-2xl overflow-hidden border border-app-border" style={{ aspectRatio: '16/9' }}>
-            <iframe
-              src={`https://www.youtube.com/embed/${videoId}?rel=0&cc_load_policy=1&cc_lang_pref=en&hl=en`}
-              title={lesson.title}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-          <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-            <span className="text-lg">💡</span>
-            <div>
-              <p className="text-amber-400 text-xs font-semibold">Watch once — then explain from memory</p>
-              <p className="text-gray-500 text-xs">English subtitles enabled. Click the CC button if not visible.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── AUDIO ─────────────────────────────────────────────── */}
-      {type === 'audio' && lesson.audioUrl && (
-        <div className="space-y-4">
-          <h3 className="text-slate-800 font-bold text-lg">🎧 Listen carefully</h3>
-          <div className="bg-app-card border border-app-border rounded-2xl p-5">
-            <audio controls className="w-full" controlsList="nodownload">
-              <source src={lesson.audioUrl} />
-              Your browser does not support the audio element.
-            </audio>
-          </div>
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-            <p className="text-amber-400 text-xs font-semibold">💡 Listen as many times as you need — then explain</p>
-          </div>
-        </div>
-      )}
-
-      {/* ── TEXT ──────────────────────────────────────────────── */}
-      {type === 'text' && (
-        <div className="bg-app-card border border-app-border rounded-2xl p-5">
-          <p className="text-gray-700 leading-relaxed text-base">{lesson.content}</p>
-        </div>
-      )}
-
-      {/* Context note for video/audio */}
-      {type !== 'text' && lesson.content && (
-        <div className="bg-app-card border border-app-border rounded-2xl p-4">
-          <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">Context</p>
-          <p className="text-gray-400 text-sm leading-relaxed">{lesson.content}</p>
-        </div>
-      )}
-
-      {/* Key points */}
-      <div className="bg-app-card border border-blue-500/20 rounded-2xl p-4">
-        <p className="text-blue-400 text-sm font-semibold mb-2">🎯 Focus on understanding:</p>
-        <ul className="space-y-1">
-          {lesson.keyPoints.slice(0, 3).map((kp, i) => (
-            <li key={i} className="text-gray-400 text-sm flex items-start gap-2">
-              <span className="text-blue-500 mt-0.5">•</span>
-              <span>{kp}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <button
-        onClick={onReady}
-        className="w-full py-4 rounded-2xl gradient-primary text-white font-semibold text-lg glow-purple"
-      >
-        I'm Ready to Explain →
-      </button>
-      {type === 'text' && (
-        <p className="text-center text-gray-600 text-xs">
-          {timeLeft > 0 ? `Take your time — ${timeLeft}s remaining` : "Time's up — you can still keep reading"}
-        </p>
-      )}
     </div>
   )
 }

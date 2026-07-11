@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Flame, BookOpen, Target, Key, Trash2, ChevronRight, Eye, EyeOff, TrendingUp, Zap, Crown, Bell, Globe, LogOut, Moon } from 'lucide-react'
+import { Flame, BookOpen, Target, Trash2, TrendingUp, Zap, Crown, Bell, Globe, LogOut, Moon, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
 import useAppStore from '../store/useAppStore'
-import { getLessonById } from '../data/lessons'
+import useLessons from '../hooks/useLessons'
 import { BADGES, getLevelInfo } from '../data/badges'
 import BottomNav from '../components/BottomNav'
 import useNotifications from '../hooks/useNotifications'
@@ -13,11 +13,12 @@ import { useUser, useClerk } from '@clerk/clerk-react'
 import useProgressSync from '../hooks/useProgressSync'
 
 export default function Profile() {
+  const { getLessonById } = useLessons()
   const navigate = useNavigate()
   const { t }    = useTranslation()
   const {
     streak, completedLessons, gaps, sessionHistory,
-    openaiKey, setOpenaiKey, resetProgress, xp, earnedBadges,
+    resetProgress, xp, earnedBadges,
     isPremium, activatePremium, deactivatePremium, language, setLanguage,
     darkMode, setDarkMode,
   } = useAppStore()
@@ -37,16 +38,7 @@ export default function Profile() {
     await signOut({ redirectUrl: '/auth' })
   }
 
-  const [apiKeyInput, setApiKeyInput]   = useState(openaiKey)
-  const [showKey, setShowKey]           = useState(false)
-  const [saved, setSaved]               = useState(false)
-  const [showReset, setShowReset]       = useState(false)
-
-  const handleSaveKey = () => {
-    setOpenaiKey(apiKeyInput.trim())
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
+  const [showReset, setShowReset] = useState(false)
 
   const avgClarity = sessionHistory.length
     ? Math.round(sessionHistory.reduce((a, s) => a + (s.clarityScore || 0), 0) / sessionHistory.length * 10) / 10
@@ -319,52 +311,6 @@ export default function Profile() {
                 </button>
               </div>
             )}
-          </div>
-        </motion.div>
-
-        {/* ── API Key ──────────────────────────────────────────────── */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-3">OpenAI API Key</p>
-          <div className="bg-app-card border border-app-border rounded-3xl p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <Key size={18} className="text-blue-400 mt-0.5 flex-shrink-0" />
-              <p className="text-gray-400 text-sm">
-                Required to analyze your explanations. Your key is stored locally and never sent anywhere except OpenAI.
-              </p>
-            </div>
-            <div className="relative">
-              <input
-                type={showKey ? 'text' : 'password'}
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                placeholder="sk-..."
-                className="w-full bg-app-surface border border-app-border rounded-xl px-4 py-3 text-gray-700 text-sm pr-10 focus:border-blue-500/60 transition-colors"
-              />
-              <button
-                onClick={() => setShowKey(!showKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-              >
-                {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            <button
-              onClick={handleSaveKey}
-              className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
-                saved
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  : 'gradient-primary text-white glow-purple'
-              }`}
-            >
-              {saved ? '✓ Saved!' : 'Save API Key'}
-            </button>
-            <a
-              href="https://platform.openai.com/api-keys"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1 text-blue-400 text-xs"
-            >
-              Get your key at platform.openai.com <ChevronRight size={12} />
-            </a>
           </div>
         </motion.div>
 

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import useAppStore from '../store/useAppStore'
-import { lessons } from '../data/lessons'
+import useLessons from './useLessons'
 
 const SRS_INTERVALS = [1, 3, 7, 14, 30] // days between reviews
 
@@ -11,8 +11,10 @@ function daysSince(isoDate) {
 
 export default function useSRS() {
   const { sessionHistory, completedLessons } = useAppStore()
+  const { lessons } = useLessons()
 
   const dueForReview = useMemo(() => {
+    if (lessons.length === 0) return []
     const lessonMap = {}
 
     sessionHistory.forEach((session) => {
@@ -49,7 +51,8 @@ export default function useSRS() {
       .filter(Boolean)
       .sort((a, b) => b.urgency - a.urgency)
       .slice(0, 5)
-  }, [sessionHistory, completedLessons])
+  }, [sessionHistory, completedLessons, lessons])
+
 
   return { dueForReview }
 }

@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import useAppStore from '../store/useAppStore'
 import { extractYouTubeId } from '../data/lessons'
-import OpenAI from 'openai'
+import { callEdgeFunction } from '../services/supabase'
 import BottomNav from '../components/BottomNav'
 
 const CONTENT_TYPES = [
@@ -89,7 +89,7 @@ const TEMPLATES = {
 
 export default function CreateLesson() {
   const navigate         = useNavigate()
-  const { addCustomLesson, openaiKey, isPremium, checkAndIncrementAI } = useAppStore()
+  const { addCustomLesson, isPremium, checkAndIncrementAI } = useAppStore()
 
   useEffect(() => {
     if (!isPremium) navigate('/pricing', { replace: true })
@@ -135,65 +135,38 @@ export default function CreateLesson() {
   }, [])
 
   const generateKeyPoints = async () => {
-    if (!openaiKey) { setError('Add your OpenAI API key in Profile first.'); return }
     if (!checkAndIncrementAI()) { setError('Daily AI limit reached. Upgrade to Premium for unlimited access.'); return }
-    
-    const source = (contentType === 'text' || contentType === 'template') ? textContent 
+    const source = (contentType === 'text' || contentType === 'template') ? textContent
                   : `This is a ${contentType} about: ${title}`
     setGenerating(true)
     setError('')
     try {
-      const client = new OpenAI({ apiKey: openaiKey, dangerouslyAllowBrowser: true })
-      const res = await client.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{
-          role: 'user',
-          content: `Extract exactly 5 key points and 5 vocabulary words from this content that a ${level} English language learner (${subLevel}) should learn.
-Return as a JSON object: { 
-  "title": "...", 
-  "keyPoints": ["...", "...", "...", "...", "..."],
-  "vocabulary": ["...", "...", "...", "...", "..."]
-}
-
-Content: ${source.slice(0, 2000)}`,
-        }],
-        response_format: { type: 'json_object' },
-        temperature: 0.3,
+      const data = await callEdgeFunction('create-lesson', {
+        action: 'generate-key-points',
+        source, level, subLevel,
       })
-      const data = JSON.parse(res.choices[0].message.content)
       if (data.keyPoints) setKeyPoints(data.keyPoints)
       if (data.vocabulary) setVocabulary(data.vocabulary.slice(0, 5))
       if (data.title && !title.trim()) setTitle(data.title)
     } catch {
-      setError('Failed to generate. Check your API key and try again.')
+      setError('Failed to generate. Please try again.')
     } finally {
       setGenerating(false)
     }
   }
 
   const regenerateContent = async () => {
-    if (!openaiKey) { setError('Add your OpenAI API key in Profile first.'); return }
     if (!checkAndIncrementAI()) { setError('Daily AI limit reached.'); return }
-    
     setGenerating(true)
     setError('')
     try {
-      const client = new OpenAI({ apiKey: openaiKey, dangerouslyAllowBrowser: true })
-      const res = await client.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{
-          role: 'user',
-          content: `Write a ${level} level (${subLevel}) English lesson about "${title}" for the "${category}" category.
-The lesson should be approximately ${estimatedMinutes * 20} words, suitable for a ${estimatedMinutes}-minute study session.
-Return as JSON: { "content": "...", "estimatedMinutes": ${estimatedMinutes} }`,
-        }],
-        response_format: { type: 'json_object' },
-        temperature: 0.7,
+      const data = await callEdgeFunction('create-lesson', {
+        action: 'generate-content',
+        title, level, subLevel, category, estimatedMinutes,
       })
-      const data = JSON.parse(res.choices[0].message.content)
       if (data.content) setTextContent(data.content)
     } catch {
-      setError('Failed to generate content. Check your API key.')
+      setError('Failed to generate content. Please try again.')
     } finally {
       setGenerating(false)
     }
@@ -506,9 +479,9 @@ Return as JSON: { "content": "...", "estimatedMinutes": ${estimatedMinutes} }`,
 
               <button
                 onClick={generateKeyPoints}
-                disabled={generating || !openaiKey}
+                disabled={generating}
                 className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border font-semibold text-sm transition-all ${
-                  generating || !openaiKey
+                  generating
                     ? 'border-app-border bg-app-card text-gray-500 cursor-not-allowed'
                     : 'border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20'
                 }`}
@@ -520,7 +493,7 @@ Return as JSON: { "content": "...", "estimatedMinutes": ${estimatedMinutes} }`,
                 ) : (
                   <Sparkles size={16} />
                 )}
-                {!openaiKey ? 'Add API Key in Profile' : generating ? 'Generating with AI...' : '✨ Generate Key Points & Vocab'}
+                {generating ? 'Generating with AI...' : '✨ Generate Key Points & Vocab'}
               </button>
 
               {/* Key Points */}

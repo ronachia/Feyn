@@ -5,7 +5,7 @@ import { transcribeAudio } from '../services/whisper'
 
 const BAR_COUNT = 18
 
-export default function VoiceRecorder({ onTranscript, apiKey, disabled }) {
+export default function VoiceRecorder({ onTranscript, disabled }) {
   const [status, setStatus]         = useState('idle')
   const [duration, setDuration]     = useState(0)
   const [editedText, setEditedText] = useState('')
@@ -64,7 +64,7 @@ export default function VoiceRecorder({ onTranscript, apiKey, disabled }) {
         const blob = new Blob(chunksRef.current, { type: mr.mimeType })
         setStatus('transcribing')
         try {
-          const result = await transcribeAudio(blob, apiKey)
+          const result = await transcribeAudio(blob)
           setEditedText(result.text)
           setStatus('done')
         } catch (e) {

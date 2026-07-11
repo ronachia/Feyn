@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { BADGES, getLevelInfo } from '../data/badges'
+import { applyDarkMode } from '../services/platform'
 
 const useAppStore = create(
   persist(
@@ -91,7 +92,7 @@ const useAppStore = create(
       darkMode: false,
       setDarkMode: (v) => {
         set({ darkMode: v })
-        document.documentElement.classList.toggle('dark', v)
+        applyDarkMode(v)
       },
 
       // ─── Gamification ─────────────────────────────────────────
@@ -142,6 +143,21 @@ const useAppStore = create(
       newBadges: [],
       clearNewBadges: () => set({ newBadges: [] }),
 
+      // ─── Exercise Cache ───────────────────────────────────────
+      exerciseCache: null,
+
+      setExerciseCache: (gaps, exercises) =>
+        set({ exerciseCache: { gaps, exercises, cachedAt: new Date().toISOString() } }),
+
+      getExerciseCache: (currentGaps) => {
+        const cache = get().exerciseCache
+        if (!cache) return null
+        const ageHours = (Date.now() - new Date(cache.cachedAt).getTime()) / 3600000
+        if (ageHours > 24) return null
+        const sameGaps = JSON.stringify(cache.gaps) === JSON.stringify(currentGaps)
+        return sameGaps ? cache.exercises : null
+      },
+
       // ─── Custom Lessons ───────────────────────────────────────
       customLessons: [],
 
@@ -156,8 +172,9 @@ const useAppStore = create(
         set({ customLessons: get().customLessons.filter((l) => l.id !== id) })
       },
 
-      // ─── Subscription ─────────────────────────────────────────
+      // ─── Subscription & Admin ─────────────────────────────────
       isPremium: false,
+      isAdmin: false,
       premiumActivatedAt: null,
       dailyStats: { date: null, aiCalls: 0 },
 
@@ -184,10 +201,6 @@ const useAppStore = create(
         if (stats.date !== today) return 3
         return Math.max(0, 3 - stats.aiCalls)
       },
-
-      // ─── Settings ─────────────────────────────────────────────
-      openaiKey: '',
-      setOpenaiKey: (key) => set({ openaiKey: key }),
 
       // ─── Reset ────────────────────────────────────────────────
       resetProgress: () =>

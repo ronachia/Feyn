@@ -9,7 +9,7 @@ import BottomNav from '../components/BottomNav'
 
 export default function Practice() {
   const navigate = useNavigate()
-  const { gaps, openaiKey, earnXP, fixGap } = useAppStore()
+  const { gaps, earnXP, fixGap, getExerciseCache, setExerciseCache } = useAppStore()
 
   const [exercises, setExercises]   = useState([])
   const [current, setCurrent]       = useState(0)
@@ -28,18 +28,21 @@ export default function Practice() {
   const activeGaps = gaps.filter((g) => g.count > 0).map((g) => g.concept)
 
   useEffect(() => {
-    if (!openaiKey) {
-      setError('No OpenAI API key set. Add it in your Profile settings.')
-      setLoading(false)
-      return
-    }
     if (activeGaps.length === 0) {
       setError('No gaps to practice yet! Complete a lesson first to discover your gaps.')
       setLoading(false)
       return
     }
-    generateExercises({ gaps: activeGaps, apiKey: openaiKey })
+    const cached = getExerciseCache(activeGaps)
+    if (cached) {
+      setExercises(cached)
+      if (cached[0]?.type === 'word_order') setWordOrder([...cached[0].words].sort(() => Math.random() - 0.5))
+      setLoading(false)
+      return
+    }
+    generateExercises({ gaps: activeGaps })
       .then((ex) => {
+        setExerciseCache(activeGaps, ex)
         setExercises(ex)
         if (ex[0]?.type === 'word_order') setWordOrder([...ex[0].words].sort(() => Math.random() - 0.5))
         setLoading(false)

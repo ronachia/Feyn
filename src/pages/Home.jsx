@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Flame, TrendingUp, BookOpen, ChevronRight, Zap, RotateCcw, X, Play, Brain, PenLine, RefreshCw } from 'lucide-react'
 import useAppStore from '../store/useAppStore'
-import { lessons, getLevelColor, getLevelLabel } from '../data/lessons'
+import { getLevelColor, getLevelLabel } from '../data/lessonHelpers'
+import useLessons from '../hooks/useLessons'
 import { getLevelInfo } from '../data/badges'
 import BottomNav from '../components/BottomNav'
 import useSRS from '../hooks/useSRS'
@@ -11,6 +12,7 @@ import useSRS from '../hooks/useSRS'
 export default function Home() {
   const navigate        = useNavigate()
   const { streak, completedLessons, gaps, user, xp } = useAppStore()
+  const { lessons } = useLessons()
   const levelInfo = getLevelInfo(xp || 0)
 
   const nextLesson    = lessons.find((l) => !completedLessons.includes(l.id)) || lessons[0]
