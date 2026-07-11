@@ -1,7 +1,8 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { BADGES, getLevelInfo } from '../data/badges'
 import { applyDarkMode } from '../services/platform'
+import nativeStorage from '../services/nativeStorage'
 
 const useAppStore = create(
   persist(
@@ -221,7 +222,10 @@ const useAppStore = create(
           dailyStats: { date: null, aiCalls: 0 },
         }),
     }),
-    { name: 'feynlearn-storage' }
+    {
+      name: 'feynlearn-storage',
+      storage: createJSONStorage(() => nativeStorage),
+    }
   )
 )
 

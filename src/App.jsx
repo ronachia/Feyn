@@ -1,11 +1,12 @@
 import { useEffect, lazy, Suspense } from 'react'
 import * as Sentry from '@sentry/react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { SignedIn, SignedOut, RedirectToSignIn, useUser, useAuth } from '@clerk/clerk-react'
 import useNotifications from './hooks/useNotifications'
 import useAppStore from './store/useAppStore'
 import useProgressSync from './hooks/useProgressSync'
 import { initEdgeFunctions } from './services/supabase'
+import { onAppUrlOpen } from './services/platform'
 import Home from './pages/Home'
 import AuthPage from './pages/AuthPage'
 import Onboarding from './pages/Onboarding'
@@ -54,6 +55,31 @@ function NotificationInit() {
   return null
 }
 
+// Handles the app being reopened via a deep link — e.g. Mercado Pago's
+// back_urls bringing the user back after checkout. Only fires on native
+// (see onAppUrlOpen); on web the browser navigates normally so there's
+// nothing to do. Requires Android App Links / iOS Universal Links to be
+// configured once a production domain exists — see android/app/src/main/AndroidManifest.xml
+// for the exact intent-filter to add, and PARECER_AUDITORIA_MOBILE.md for the iOS side.
+function DeepLinkHandler() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    let removeListener = () => {}
+    onAppUrlOpen((url) => {
+      try {
+        const { pathname, search } = new URL(url)
+        navigate(pathname + search, { replace: true })
+      } catch {
+        /* malformed or unrecognized deep link — ignore */
+      }
+    }).then((remove) => { removeListener = remove })
+    return () => removeListener()
+  }, [navigate])
+
+  return null
+}
+
 function EdgeFunctionInit() {
   const { getToken } = useAuth()
   const { isSignedIn } = useUser()
@@ -88,6 +114,7 @@ export default function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <NotificationInit />
       <EdgeFunctionInit />
+      <DeepLinkHandler />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />

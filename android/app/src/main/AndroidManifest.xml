@@ -22,6 +22,30 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!--
+              App Links for the Mercado Pago checkout return (back_urls).
+              Today the checkout opens in an in-app browser (@capacitor/browser)
+              and the payment success/failure page is a plain https URL — without
+              this, Android just shows that page in the browser tab instead of
+              reopening the native app.
+
+              Once FeynLearn has a real production domain (APP_URL in the
+              Edge Functions' env), uncomment this block with that host, AND
+              host the matching assetlinks.json at:
+                https://<your-domain>/.well-known/assetlinks.json
+              containing your release keystore's SHA-256 fingerprint
+              (get it with: keytool -list -v -keystore your.keystore).
+              Without a verified assetlinks.json, autoVerify="true" silently
+              fails and the fallback behavior described above stays in place.
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="YOUR_PRODUCTION_DOMAIN" android:pathPrefix="/pricing" />
+            </intent-filter>
+            -->
+
         </activity>
 
         <provider

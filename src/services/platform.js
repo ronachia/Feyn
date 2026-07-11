@@ -87,6 +87,18 @@ export async function hasNotificationPermission() {
   return typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'
 }
 
+// Fires `callback(url)` whenever the native app is opened/resumed via a
+// deep link (custom scheme or, once configured, an Android App
+// Link / iOS Universal Link) — e.g. the Mercado Pago checkout redirecting
+// back after payment. No-op on web, where the browser just navigates
+// normally and React Router already sees the URL.
+export async function onAppUrlOpen(callback) {
+  if (!isNativePlatform()) return () => {}
+  const { App } = await import('@capacitor/app')
+  const handle = await App.addListener('appUrlOpen', (data) => callback(data.url))
+  return () => handle.remove()
+}
+
 export async function showLocalNotification({ title, body }) {
   if (isNativePlatform()) {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
