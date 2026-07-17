@@ -145,12 +145,13 @@ O fluxo de cada lição segue 4 passos:
 ## 6. Modelo de Negócio (Freemium)
 
 ### Free
-- Todas as 19 lições da biblioteca
+- Biblioteca de lições (em expansão constante)
 - Explicação via texto
 - 3 análises AI por dia
 - XP, badges, streaks
 
-### Premium (R$ 9,90/mês ou R$ 79,90/ano)
+### Premium (R$ 59,90/mês ou R$ 598,80/ano — equivale a R$ 49,90/mês)
+Preço de lançamento com 33% (mensal) / 44% (anual) de desconto sobre o preço de tabela (R$ 89,90/mês · R$ 1.078,80/ano). Racional completo de precificação (ancoragem, margem sobre custo de API, comparação com Cambly/aula particular) em `FeynLearn_Plano_Marketing.docx`, Seção 6.1.
 - **Voice Mode** — explicação por voz (Whisper + fluency)
 - **Teach Mode** — Teo (AI estudante)
 - **Create Lessons** — geração AI de lições custom
@@ -161,7 +162,7 @@ O fluxo de cada lição segue 4 passos:
 
 ## 7. Dados & Conteúdo
 
-### Biblioteca de Lições (19 lições)
+### Biblioteca de Lições (em expansão contínua)
 | Categoria | Lições |
 |-----------|--------|
 | Basics | Introdução, Numbers & Time, Colors |
@@ -249,7 +250,7 @@ Home → Ver Gaps → Practice → Exercícios personalizados
 - [x] Voice mode (Whisper)
 - [x] Teach mode (Teo)
 - [x] Gamification (XP, badges, streaks)
-- [x] 19 lições pré-criadas
+- [x] Biblioteca inicial de lições pré-criadas
 - [x] Backend seguro (Edge Functions + Supabase)
 
 ### ✅ Concluído (Jul 2026)

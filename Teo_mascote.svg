@@ -1,0 +1,45 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="teoBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <radialGradient id="teoGlow" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- sparkles: spark of understanding -->
+  <g fill="#fbbf24">
+    <path d="M 66 96 L 71 108 L 83 113 L 71 118 L 66 130 L 61 118 L 49 113 L 61 108 Z"/>
+    <path d="M 330 130 L 334 139 L 343 143 L 334 147 L 330 156 L 326 147 L 317 143 L 326 139 Z"/>
+    <circle cx="322" cy="90" r="5"/>
+    <circle cx="60" cy="220" r="4"/>
+  </g>
+
+  <!-- body: soft rounded blob -->
+  <ellipse cx="200" cy="215" rx="118" ry="112" fill="url(#teoBody)"/>
+  <ellipse cx="200" cy="215" rx="118" ry="112" fill="url(#teoGlow)"/>
+
+  <!-- stub arms -->
+  <ellipse cx="98" cy="250" rx="20" ry="34" fill="#a78bfa" transform="rotate(-18 98 250)"/>
+  <ellipse cx="302" cy="250" rx="20" ry="34" fill="#a78bfa" transform="rotate(18 302 250)"/>
+
+  <!-- face -->
+  <ellipse cx="163" cy="205" rx="14" ry="18" fill="#1a1a2e"/>
+  <ellipse cx="237" cy="205" rx="14" ry="18" fill="#1a1a2e"/>
+  <circle cx="167" cy="199" r="4" fill="#ffffff"/>
+  <circle cx="241" cy="199" r="4" fill="#ffffff"/>
+
+  <!-- rosy cheeks -->
+  <circle cx="146" cy="234" r="12" fill="#f472b6" opacity="0.35"/>
+  <circle cx="254" cy="234" r="12" fill="#f472b6" opacity="0.35"/>
+
+  <!-- smile -->
+  <path d="M 172 240 Q 200 262 228 240" stroke="#1a1a2e" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+  <!-- antenna: signal of AI / spark -->
+  <line x1="200" y1="103" x2="200" y2="74" stroke="#8b5cf6" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="200" cy="66" r="11" fill="#fbbf24"/>
+</svg>

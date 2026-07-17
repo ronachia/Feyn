@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FeynLearn — Você já sabe aprender um idioma. Só precisa aplicar isso ao inglês.</title>
+<style>
+  :root {
+    --bg: #0f0f23;
+    --card: #1a1a2e;
+    --card-light: #22223a;
+    --purple: #a78bfa;
+    --purple-deep: #8b5cf6;
+    --purple-dark: #6d28d9;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; }
+
+  /* NAV */
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  .logo { font-weight: 800; font-size: 22px; letter-spacing: -0.5px; }
+  .logo span { color: var(--purple); }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--purple), #c084fc);
+    color: #1a1a2e; font-weight: 700; padding: 10px 22px; border-radius: 999px;
+    text-decoration: none; font-size: 14px;
+  }
+
+  /* HERO */
+  .hero { padding: 60px 0 80px; text-align: center; position: relative; }
+  .kicker {
+    display: inline-block; color: var(--purple); font-weight: 700; font-size: 13px;
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 18px;
+  }
+  h1 { font-size: 44px; font-weight: 800; line-height: 1.15; max-width: 820px; margin: 0 auto 20px; }
+  h1 .accent { background: linear-gradient(135deg, var(--purple), #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .subhead { font-size: 19px; color: var(--muted); max-width: 620px; margin: 0 auto 34px; }
+  .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--purple), #c084fc); color: #1a1a2e; font-weight: 700;
+    padding: 16px 34px; border-radius: 999px; text-decoration: none; font-size: 16px;
+    box-shadow: 0 8px 24px rgba(139,92,246,0.35);
+  }
+  .btn-secondary {
+    border: 1px solid #3f3f5f; color: var(--text); padding: 16px 30px; border-radius: 999px;
+    text-decoration: none; font-size: 16px; font-weight: 600;
+  }
+  .microcopy { font-size: 13px; color: var(--muted); }
+
+  /* SOCIAL PROOF STRIP */
+  .proof-strip { border-top: 1px solid #24243e; border-bottom: 1px solid #24243e; padding: 20px 0; }
+  .proof-strip .wrap { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .proof-strip strong { color: var(--text); }
+
+  /* SECTIONS */
+  section { padding: 80px 0; }
+  .section-kicker { color: var(--purple); font-weight: 700; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; text-align: center; display: block; }
+  h2 { font-size: 32px; font-weight: 800; text-align: center; max-width: 700px; margin: 0 auto 16px; }
+  .lead { text-align: center; color: var(--muted); max-width: 640px; margin: 0 auto 50px; font-size: 16px; }
+
+  /* STAKES (dor) */
+  .stakes { background: var(--card); border-radius: 24px; padding: 60px 40px; }
+  .stakes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 40px; }
+  .stakes-card { background: var(--bg); border-radius: 16px; padding: 28px; }
+  .stakes-card .icon { font-size: 26px; margin-bottom: 14px; }
+  .stakes-card h3 { font-size: 17px; margin-bottom: 10px; }
+  .stakes-card p { color: var(--muted); font-size: 14px; }
+
+  /* JUSTIFY FAILURE CALLOUT */
+  .callout {
+    max-width: 780px; margin: 50px auto 0; text-align: center; padding: 28px 32px;
+    border-radius: 16px; background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.25);
+  }
+  .callout p { font-size: 18px; font-style: italic; color: var(--text); }
+  .callout .sig { display: block; margin-top: 10px; font-size: 13px; color: var(--purple); font-style: normal; }
+
+  /* VALUE PROPS */
+  .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .value-card { text-align: center; padding: 10px; }
+  .value-card .num {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--purple-deep); color: white;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; margin: 0 auto 18px; font-size: 18px;
+  }
+  .value-card h3 { font-size: 18px; margin-bottom: 10px; }
+  .value-card p { color: var(--muted); font-size: 14px; }
+
+  /* GUIDE / AUTHORITY */
+  .guide { background: linear-gradient(135deg, #1a1a2e, #241a3a); border-radius: 24px; padding: 60px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
+  .guide h2 { text-align: left; margin: 0 0 18px; max-width: none; }
+  .guide p { color: var(--muted); font-size: 15px; margin-bottom: 16px; }
+  .stat-row { display: flex; gap: 30px; margin-top: 26px; }
+  .stat-row div { }
+  .stat-row .n { font-size: 30px; font-weight: 800; color: var(--purple); }
+  .stat-row .l { font-size: 12px; color: var(--muted); }
+  .guide-quote { background: var(--bg); border-radius: 16px; padding: 30px; font-style: italic; color: var(--text); font-size: 15px; }
+  .guide-quote .who { display: block; margin-top: 14px; font-style: normal; font-size: 13px; color: var(--purple); }
+
+  /* PLAN 3 steps */
+  .plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: step; }
+  .plan-card { background: var(--card); border-radius: 16px; padding: 30px 26px; position: relative; }
+  .plan-card .step-num { font-size: 40px; font-weight: 800; color: rgba(167,139,250,0.25); position: absolute; top: 16px; right: 20px; }
+  .plan-card h3 { font-size: 17px; margin-bottom: 10px; }
+  .plan-card p { color: var(--muted); font-size: 14px; }
+
+  /* PRICING */
+  .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 760px; margin: 0 auto; }
+  .price-card { background: var(--card); border-radius: 20px; padding: 34px; }
+  .price-card.premium { background: var(--purple-dark); box-shadow: 0 12px 32px rgba(109,40,217,0.35); }
+  .price-card h3 { font-size: 20px; margin-bottom: 6px; }
+  .price-card .price { font-size: 34px; font-weight: 800; margin: 14px 0; }
+  .price-card ul { list-style: none; margin-top: 18px; }
+  .price-card li { font-size: 14px; color: var(--muted); padding: 6px 0; }
+  .price-card.premium li { color: #ede9fe; }
+  .price-card.premium .price { color: white; }
+
+  /* FINAL CTA */
+  .final-cta { text-align: center; background: linear-gradient(135deg, var(--purple-dark), #4c1d95); border-radius: 28px; padding: 70px 40px; }
+  .final-cta h2 { color: white; }
+  .final-cta .subhead { color: #ddd6fe; }
+
+  footer { padding: 40px 0; text-align: center; color: var(--muted); font-size: 13px; border-top: 1px solid #24243e; margin-top: 40px; }
+
+  @media (max-width: 800px) {
+    h1 { font-size: 32px; }
+    .stakes-grid, .value-grid, .plan-grid, .pricing-grid { grid-template-columns: 1fr; }
+    .guide { grid-template-columns: 1fr; padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="wrap">
+  <div class="logo">Feyn<span>Learn</span></div>
+  <a href="#pricing" class="nav-cta">Começar grátis</a>
+</nav>
+
+<!-- HERO — one-liner (Miller SB7) + encourage dream + confirm suspicion (Warren) -->
+<header class="hero wrap">
+  <span class="kicker">Neuroaprendizado simples e efetivo</span>
+  <h1>Você já sabe aprender um idioma. <span class="accent">Só ninguém te deixou aplicar isso ao inglês.</span></h1>
+  <p class="subhead">Quem estuda inglês sozinho entende tudo e trava na hora de falar. O FeynLearn usa IA pra você praticar do jeito que aprendeu sua língua materna — até falar de verdade, sem decoreba.</p>
+  <div class="cta-row">
+    <a href="#pricing" class="btn-primary">Quero começar de graça</a>
+    <a href="#como-funciona" class="btn-secondary">Ver como funciona</a>
+  </div>
+  <p class="microcopy">Grátis para sempre no plano básico · Sem cartão de crédito</p>
+</header>
+
+<div class="proof-strip">
+  <div class="wrap">
+    <span>Biblioteca de lições prontas</span>
+    <span><strong>R$ 59,90</strong>/mês no Premium — uma fração do preço de aula particular</span>
+    <span>Baseado na Técnica Feynman, do Nobel Richard Feynman</span>
+  </div>
+</div>
+
+<!-- STAKES — problema externo + interno + justify failure (Warren) -->
+<section id="como-funciona">
+  <div class="wrap">
+    <span class="section-kicker">O problema</span>
+    <h2>Se você trava ao falar, o problema nunca foi você</h2>
+    <p class="lead">É a Ilusão de Conhecimento: reconhecer uma palavra numa alternativa é fácil. Produzi-la sozinho, sem apoio, é outra história — e é aí que a maioria dos métodos falha.</p>
+    <div class="stakes">
+      <div class="stakes-grid">
+        <div class="stakes-card">
+          <div class="icon">😳</div>
+          <h3>"Entendo tudo, mas travo"</h3>
+          <p>Você lê, assiste vídeo, entende cada palavra — e na hora de montar uma frase, a mente dá branco.</p>
+        </div>
+        <div class="stakes-card">
+          <div class="icon">🔁</div>
+          <h3>Decoreba que não gruda</h3>
+          <p>Flashcard e exercício de múltipla escolha treinam reconhecimento, não a produção real da língua.</p>
+        </div>
+        <div class="stakes-card">
+          <div class="icon">😅</div>
+          <h3>Medo de errar em público</h3>
+          <p>O medo de errar é o que mais atrasa quem já sabe mais inglês do que pensa que sabe.</p>
+        </div>
+      </div>
+      <div class="callout">
+        <p>"Não é sua culpa. Você foi ensinado a reconhecer inglês, não a produzi-lo. É a diferença entre decorar a resposta certa e conseguir explicar com suas próprias palavras."</p>
+        <span class="sig">— É exatamente isso que o FeynLearn resolve</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUE PROPOSITION — 3 benefícios (Miller) -->
+<section>
+  <div class="wrap">
+    <span class="section-kicker">A solução</span>
+    <h2>O mesmo processo com que você aprendeu a falar</h2>
+    <p class="lead">Ninguém decorou regra de gramática antes de falar a língua materna: ouviu, tentou, errou, foi corrigido, repetiu. O FeynLearn recria esse ciclo natural para o inglês — com IA no lugar da correção constante.</p>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="num">1</div>
+        <h3>Você produz, não só reconhece</h3>
+        <p>Lê um conteúdo curto e explica com suas próprias palavras — por texto ou voz.</p>
+      </div>
+      <div class="value-card">
+        <div class="num">2</div>
+        <h3>Feedback de IA na hora</h3>
+        <p>Clareza, cobertura e lacunas identificadas em segundos — como um professor particular 24/7.</p>
+      </div>
+      <div class="value-card">
+        <div class="num">3</div>
+        <h3>Motivação que gruda</h3>
+        <p>XP, streaks e badges mantêm o hábito diário — sem precisar de força de vontade sobre-humana.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GUIDE — empatia + autoridade -->
+<section>
+  <div class="wrap">
+    <div class="guide">
+      <div>
+        <span class="section-kicker" style="text-align:left; display:block;">Por que confiar</span>
+        <h2>Isso não é modismo — é assim que a humanidade aprende idiomas há milhares de anos</h2>
+        <p>A novidade não é o método: é que a ciência cognitiva moderna confirmou por que ele funciona melhor do que decorar regras. A isso chamamos de neuroaprendizado.</p>
+        <div class="stat-row">
+          <div><div class="n">90%+</div><div class="l">retenção ao explicar vs. revisar passivamente</div></div>
+          <div><div class="n">R$ 59,90</div><div class="l">por mês — fração do custo de aula particular</div></div>
+        </div>
+      </div>
+      <div class="guide-quote">
+        "Richard Feynman não só descreveu esse método — ele o viveu na prática. Morou no Brasil em 1951, aprendeu português no processo e passou a dar aulas de física na Universidade do Brasil e no CBPF, falando o que ele mesmo chamava de brincadeira de 'o português do Feynman'."
+        <span class="who">— A prova viva de que o método funciona</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLAN — 3 passos (Miller) -->
+<section>
+  <div class="wrap">
+    <span class="section-kicker">Como começar</span>
+    <h2>3 passos até sua primeira explicação em inglês</h2>
+    <div class="plan-grid">
+      <div class="plan-card"><span class="step-num">1</span><h3>Faça o teste de nível</h3><p>10 perguntas rápidas pra calibrar suas lições no ponto certo — nem fácil demais, nem impossível.</p></div>
+      <div class="plan-card"><span class="step-num">2</span><h3>Leia e explique</h3><p>Uma lição curta de 60 segundos, depois você explica com suas próprias palavras — texto ou voz.</p></div>
+      <div class="plan-card"><span class="step-num">3</span><h3>Receba feedback e repita</h3><p>A IA mostra clareza, cobertura e lacunas. Você ajusta, ganha XP e mantém a streak.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="wrap">
+    <span class="section-kicker">Planos</span>
+    <h2>Comece de graça. Sem letra miúda.</h2>
+    <p class="lead">Free pra sempre, ou Premium por menos que um café por dia — uma fração do preço de um tutor particular.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price">R$ 0</div>
+        <ul>
+          <li>Biblioteca de lições</li>
+          <li>Explicação por texto</li>
+          <li>3 análises de IA por dia</li>
+          <li>XP, badges e streaks</li>
+        </ul>
+      </div>
+      <div class="price-card premium">
+        <h3>Premium</h3>
+        <div style="font-size:14px;"><span style="text-decoration:line-through;opacity:0.6;">R$ 89,90</span> <strong style="color:#fbbf24;">33% OFF de lançamento</strong></div>
+        <div class="price">R$ 59,90<span style="font-size:15px;font-weight:400;">/mês</span></div>
+        <ul>
+          <li>✓ Voice Mode — explique por voz</li>
+          <li>✓ Teach Mode — ensine a Teo, sua aluna de IA</li>
+          <li>✓ Criação de lições com IA</li>
+          <li>✓ Análises ilimitadas + sync em nuvem</li>
+        </ul>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:40px;">
+      <a href="#" class="btn-primary">Começar agora — é grátis</a>
+      <p class="microcopy" style="margin-top:12px;">Ou R$ 598,80/ano (de R$ 1.078,80) — equivale a R$ 49,90/mês, 2 meses grátis</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section>
+  <div class="wrap">
+    <div class="final-cta">
+      <h2>Pare de estudar inglês. Comece a falar.</h2>
+      <p class="subhead" style="max-width:520px;">Sua primeira explicação em inglês está a 3 minutos de distância.</p>
+      <div class="cta-row" style="margin-top:26px;">
+        <a href="#" class="btn-primary" style="background:white;color:#4c1d95;">Quero começar de graça</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap">
+  FeynLearn — Neuroaprendizado simples e efetivo · feynlearn.app
+</footer>
+
+</body>
+</html>

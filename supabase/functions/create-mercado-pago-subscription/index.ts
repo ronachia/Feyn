@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
     // Usar plano predefinido ou criar assinatura com valor direto
     const planId = isYearly ? YEARLY_PLAN_ID : MONTHLY_PLAN_ID
-    const amount = isYearly ? 598.80 : 49.90
+    const amount = isYearly ? 598.80 : 59.90
     const title = isYearly ? 'FeynLearn Premium Anual' : 'FeynLearn Premium Mensal'
     const frequency = isYearly ? 12 : 1 // meses
     const frequencyType = 'months'

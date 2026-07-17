@@ -8,7 +8,7 @@ import useProgressSync from '../hooks/useProgressSync'
 import { openURL } from '../services/platform'
 
 const FREE_FEATURES = [
-  { label: 'All 19 library lessons', ok: true  },
+  { label: 'Full lesson library',    ok: true  },
   { label: 'Text-based explanations', ok: true  },
   { label: '3 AI analyses per day',   ok: true  },
   { label: 'XP, levels & badges',     ok: true  },
@@ -66,9 +66,10 @@ export default function Pricing() {
     return () => clearInterval(pollRef.current)
   }, [])
 
-  const price        = billing === 'monthly' ? 'R$49,90' : 'R$598,80'
+  const price        = billing === 'monthly' ? 'R$59,90' : 'R$598,80'
   const priceOld     = billing === 'monthly' ? 'R$89,90' : 'R$1.078,80'
   const period       = billing === 'monthly' ? '/mês' : '/ano (R$49,90/mês)'
+  const discountPct  = billing === 'monthly' ? '33%' : '44%'
   const saving       = billing === 'yearly'
 
   const handleCheckout = async () => {
@@ -197,7 +198,7 @@ export default function Pricing() {
           </div>
           <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
             <Zap size={11} className="text-emerald-400" />
-            <span className="text-emerald-400 text-xs font-semibold">44% OFF no preço de lançamento</span>
+            <span className="text-emerald-400 text-xs font-semibold">{discountPct} OFF no preço de lançamento</span>
           </div>
           <button
             onClick={handleCheckout}
