@@ -10,7 +10,7 @@ import { openURL } from '../services/platform'
 const FREE_FEATURES = [
   { label: 'All 19 library lessons', ok: true  },
   { label: 'Text-based explanations', ok: true  },
-  { label: '2 AI analyses per day',   ok: true  },
+  { label: '3 AI analyses per day',   ok: true  },
   { label: 'XP, levels & badges',     ok: true  },
   { label: 'Voice mode (Whisper AI)', ok: false },
   { label: 'Teach mode (Teo AI)',     ok: false },

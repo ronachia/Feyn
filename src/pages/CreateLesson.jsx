@@ -7,7 +7,7 @@ import {
   ShoppingCart, Heart, Star, Clock, Target, Zap, Copy, Check, RefreshCw
 } from 'lucide-react'
 import useAppStore from '../store/useAppStore'
-import { extractYouTubeId } from '../data/lessons'
+import { extractYouTubeId } from '../data/lessonHelpers'
 import { callEdgeFunction } from '../services/supabase'
 import BottomNav from '../components/BottomNav'
 
