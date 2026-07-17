@@ -1,220 +1,58 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ArrowLeft, Mic, MicOff, Send, RotateCcw, ChevronRight,
-  CheckCircle, XCircle, AlertCircle, Eye, EyeOff, Zap
+  ArrowLeft, Mic, MicOff, Send,
+  Eye, EyeOff, Zap, AlertCircle, X
 } from 'lucide-react'
 import useAppStore from '../store/useAppStore'
-import { getLevelColor, getLevelLabel, extractYouTubeId, getContentTypeInfo } from '../data/lessonHelpers'
+import { getLevelColor, getLevelLabel } from '../data/lessonHelpers'
 import useLessons from '../hooks/useLessons'
-import { analyzeExplanation } from '../services/ai'
-import { analyzeFluency } from '../services/whisper'
-import { getStudentQuestion } from '../services/teachMode'
-import { createSpeechRecognizer } from '../services/platform'
+import useLessonFlow from '../hooks/useLessonFlow'
 import XPToast from '../components/XPToast'
 import VoiceRecorder from '../components/VoiceRecorder'
-import useProgressSync from '../hooks/useProgressSync'
-import useAnalytics from '../hooks/useAnalytics'
 import LessonRead from '../components/lesson/LessonRead'
 import LessonFeedback from '../components/lesson/LessonFeedback'
 import LessonTeaching from '../components/lesson/LessonTeaching'
 
-const READING_TIME = 60
-
 export default function Lesson() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { completeLesson, addGaps, addSession, earnXP, calculateSessionXP, recordSessionStats, streak, customLessons, isPremium, checkAndIncrementAI, remainingAICalls } = useAppStore()
-  const { syncProgress } = useProgressSync()
+  const { customLessons } = useAppStore()
   const { getLessonById, loading: lessonsLoading } = useLessons()
-  const analytics = useAnalytics()
 
   const lesson = getLessonById(id) || customLessons.find((l) => l.id === id)
 
-  const [phase, setPhase]               = useState('intro')
-  const [timeLeft, setTimeLeft]         = useState(READING_TIME)
-  const [explanation, setExplanation]   = useState('')
-  const [feedback, setFeedback]         = useState(null)
-  const [isAnalyzing, setIsAnalyzing]   = useState(false)
-  const [isRecording, setIsRecording]   = useState(false)
-  const [error, setError]               = useState(null)
-  const [showContent, setShowContent]   = useState(false)
-  const [peeked, setPeeked]             = useState(false)
-  const [sessionXP, setSessionXP]       = useState(0)
-  const [showXPToast, setShowXPToast]   = useState(false)
-  const [inputMode, setInputMode]       = useState('text')
-  const [fluency, setFluency]           = useState(null)
-  const [teachHistory, setTeachHistory] = useState([])
-  const [teachRound, setTeachRound]     = useState(0)
-  const [teachInput, setTeachInput]     = useState('')
-  const [teachLoading, setTeachLoading] = useState(false)
-  const [teachScore, setTeachScore]     = useState(null)
-  const [teachSummary, setTeachSummary] = useState('')
+  const {
+    phase, setPhase, timeLeft,
+    explanation, setExplanation, inputMode, setInputMode, isRecording, fluency, showContent, peeked,
+    feedback, isAnalyzing,
+    teachHistory, teachRound, teachInput, setTeachInput, teachLoading, teachScore, teachSummary,
+    sessionXP, showXPToast,
+    error, setError,
+    isPremium, remainingAICalls,
+    startRecording, stopRecording,
+    handleSubmit, handleComplete, handleTryAgain, handlePeek,
+    handleVoiceTranscript, startTeaching, sendTeachingAnswer,
+  } = useLessonFlow(lesson)
 
-  const timerRef       = useRef(null)
-  const recognitionRef = useRef(null)
-  const textareaRef    = useRef(null)
+  const textareaRef = useRef(null)
 
   useEffect(() => {
     if (!lessonsLoading && !lesson) navigate('/home')
   }, [lesson, lessonsLoading, navigate])
-
-  useEffect(() => {
-    if (lesson && phase === 'read') analytics.lessonStarted(lesson)
-  }, [phase, lesson?.id])
-
-  // Reading timer
-  useEffect(() => {
-    if (phase === 'read') {
-      setTimeLeft(READING_TIME)
-      timerRef.current = setInterval(() => {
-        setTimeLeft((t) => {
-          if (t <= 1) {
-            clearInterval(timerRef.current)
-            return 0
-          }
-          return t - 1
-        })
-      }, 1000)
-    }
-    return () => clearInterval(timerRef.current)
-  }, [phase])
-
-  const startRecording = () => {
-    const recognition = createSpeechRecognizer({
-      onResult: (transcript) => setExplanation(transcript),
-      onError:  () => setIsRecording(false),
-      onEnd:    () => setIsRecording(false),
-    })
-    if (!recognition) {
-      setError('Voice recognition is not supported in your browser. Please type your explanation.')
-      return
-    }
-    recognitionRef.current = recognition
-    recognition.start()
-    setIsRecording(true)
-  }
-
-  const stopRecording = () => {
-    recognitionRef.current?.stop()
-    setIsRecording(false)
-  }
-
-  const handleSubmit = async () => {
-    if (!explanation.trim() || explanation.trim().split(' ').length < 5) {
-      setError('Write at least a few sentences about what you read.')
-      return
-    }
-    if (!checkAndIncrementAI()) {
-      setError('LIMIT_REACHED')
-      analytics.analysisFailed(lesson, 'LIMIT_REACHED')
-      return
-    }
-    setError(null)
-    setIsAnalyzing(true)
-    setPhase('analyzing')
-    analytics.analysisRequested(lesson, inputMode)
-
-    try {
-      const result = await analyzeExplanation({
-        originalContent: lesson.content,
-        userExplanation: explanation,
-        keyPoints: lesson.keyPoints,
-      })
-      setFeedback(result)
-      if (result.gaps?.length) {
-        addGaps(result.gaps)
-        result.gaps.forEach((g) => analytics.gapDetected(g, lesson.id))
-      }
-      analytics.analysisPassed(lesson, result)
-      addSession({ lessonId: lesson.id, clarityScore: result.clarityScore, coverageScore: result.coverageScore })
-      setPhase('feedback')
-    } catch (err) {
-      analytics.analysisFailed(lesson, 'API_ERROR')
-      setError('Failed to analyze. Please try again.')
-      setPhase('explain')
-    } finally {
-      setIsAnalyzing(false)
-    }
-  }
-
-  const handleComplete = () => {
-    completeLesson(lesson.id)
-    const xp = calculateSessionXP({
-      clarityScore:  feedback?.clarityScore  || 0,
-      coverageScore: feedback?.coverageScore || 0,
-      peeked,
-      streak,
-    })
-    earnXP(xp)
-    recordSessionStats({ clarityScore: feedback?.clarityScore || 0, peeked })
-    analytics.lessonCompleted(lesson, { clarityScore: feedback?.clarityScore, coverageScore: feedback?.coverageScore, xp })
-    setSessionXP(xp)
-    setShowXPToast(true)
-    setTimeout(() => setShowXPToast(false), 2500)
-    setPhase('complete')
-    syncProgress().catch((e) => console.error('syncProgress failed:', e))
-  }
-
-  const handleTryAgain = () => {
-    setExplanation('')
-    setFeedback(null)
-    setError(null)
-    setPhase('explain')
-  }
-
-  const handlePeek = () => { setShowContent(!showContent); if (!showContent) setPeeked(true) }
-
-  const handleVoiceTranscript = async (text) => {
-    setExplanation(text)
-    setInputMode('text')
-    try {
-      const f = await analyzeFluency({ text, duration: 0 })
-      setFluency(f)
-    } catch { /* fluency analysis is optional */ }
-  }
-
-  const startTeaching = async () => {
-    setPhase('teaching')
-    setTeachLoading(true)
-    setTeachHistory([])
-    setTeachRound(0)
-    try {
-      const res = await getStudentQuestion({ topic: lesson.title, explanation, history: [], round: 0 })
-      setTeachHistory([{ role: 'student', content: res.question }])
-      setTeachRound(1)
-    } catch { setPhase('feedback') }
-    finally { setTeachLoading(false) }
-  }
-
-  const sendTeachingAnswer = async () => {
-    if (!teachInput.trim() || teachLoading) return
-    const userMsg    = { role: 'user', content: teachInput.trim() }
-    const newHistory = [...teachHistory, userMsg]
-    setTeachHistory(newHistory)
-    setTeachInput('')
-    setTeachLoading(true)
-    try {
-      const res = await getStudentQuestion({ topic: lesson.title, explanation, history: newHistory, round: teachRound })
-      setTeachHistory([...newHistory, { role: 'student', content: res.question, isFinal: res.concluded }])
-      if (res.concluded) {
-        setTeachScore(res.masteryScore)
-        setTeachSummary(res.summary)
-        const xpBonus = Math.round(res.masteryScore * 10)
-        earnXP(xpBonus)
-      } else {
-        setTeachRound((r) => r + 1)
-      }
-    } catch { /* silent fail */ }
-    finally { setTeachLoading(false) }
-  }
 
   if (!lesson) return null
 
   const levelColors = getLevelColor(lesson.level)
   const wordCount   = explanation.trim() ? explanation.trim().split(/\s+/).length : 0
   const progress    = { intro: 0, read: 25, explain: 50, analyzing: 75, feedback: 85, teaching: 92, complete: 100 }[phase] || 0
+
+  // Errors from the explain phase have their own dedicated UI further down
+  // (including the special LIMIT_REACHED treatment). Everywhere else —
+  // mainly Teach Mode failures, which used to fail silently — gets this
+  // shared banner instead.
+  const showSharedErrorBanner = error && error !== 'LIMIT_REACHED' && phase !== 'explain'
 
   return (
     <div className="app-shell flex flex-col min-h-screen bg-app-bg">
@@ -241,6 +79,16 @@ export default function Lesson() {
 
       {/* ── Content Area ────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-6 pb-8">
+        {showSharedErrorBanner && (
+          <div className="mb-4 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 flex items-start gap-2">
+            <AlertCircle size={15} className="text-rose-400 flex-shrink-0 mt-0.5" />
+            <p className="text-rose-400 text-sm flex-1">{error}</p>
+            <button onClick={() => setError(null)} className="text-rose-400/70 flex-shrink-0">
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {/* INTRO */}
           {phase === 'intro' && (
@@ -277,6 +125,26 @@ export default function Lesson() {
                   <p className="text-amber-400 text-sm font-semibold mb-1">⚠️ Feynman Rule</p>
                   <p className="text-gray-600 text-sm">Don't try to memorize. Just understand the main idea. You'll explain it in your own words.</p>
                 </div>
+
+                {/* AI limit warning — shown here, before reading, instead of
+                    only surfacing after the user has already read + written
+                    their explanation. They can still start (reading/writing
+                    has value on its own), just with the heads-up up front. */}
+                {!isPremium && remainingAICalls() === 0 && (
+                  <div className="w-full bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-start gap-3">
+                    <span className="text-xl">⚡</span>
+                    <div className="flex-1 text-left">
+                      <p className="text-amber-400 font-semibold text-sm">Today's free AI analyses are used up</p>
+                      <p className="text-gray-500 text-xs mt-0.5 mb-3">You can still read and write your explanation, but AI feedback won't be available until tomorrow — unless you upgrade now.</p>
+                      <button
+                        onClick={() => navigate('/pricing')}
+                        className="w-full gradient-primary text-white text-sm font-semibold py-2.5 rounded-xl"
+                      >
+                        👑 Upgrade to Premium — Unlimited
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <button
                   onClick={() => setPhase('read')}
