@@ -12,7 +12,7 @@ import useSRS from '../hooks/useSRS'
 export default function Home() {
   const navigate        = useNavigate()
   const { streak, completedLessons, gaps, user, xp } = useAppStore()
-  const { lessons } = useLessons()
+  const { lessons, loading: lessonsLoading, error: lessonsError } = useLessons()
   const levelInfo = getLevelInfo(xp || 0)
 
   const nextLesson    = lessons.find((l) => !completedLessons.includes(l.id)) || lessons[0]
@@ -98,28 +98,38 @@ export default function Home() {
         {/* ── Daily Challenge ─────────────────────────────────────── */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-3">Next Up</p>
-          <button
-            onClick={() => navigate(`/lesson/${nextLesson.id}`)}
-            className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-left relative overflow-hidden group hover:border-blue-400 hover:shadow-md active:scale-[0.99] transition-all duration-200"
-          >
-            <div className="absolute top-0 right-0 w-28 h-28 gradient-primary opacity-8 rounded-full translate-x-8 -translate-y-8 group-hover:opacity-15 transition-opacity" />
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-app-surface flex items-center justify-center text-3xl flex-shrink-0">
-                {nextLesson.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <LevelBadge level={nextLesson.level} />
-                  <span className="text-slate-400 text-xs">{nextLesson.estimatedMinutes} min</span>
+          {nextLesson ? (
+            <button
+              onClick={() => navigate(`/lesson/${nextLesson.id}`)}
+              className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-left relative overflow-hidden group hover:border-blue-400 hover:shadow-md active:scale-[0.99] transition-all duration-200"
+            >
+              <div className="absolute top-0 right-0 w-28 h-28 gradient-primary opacity-8 rounded-full translate-x-8 -translate-y-8 group-hover:opacity-15 transition-opacity" />
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-app-surface flex items-center justify-center text-3xl flex-shrink-0">
+                  {nextLesson.icon}
                 </div>
-                <p className="text-slate-800 font-bold text-base truncate">{nextLesson.title}</p>
-                <p className="text-slate-500 text-xs mt-0.5">{nextLesson.category}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <LevelBadge level={nextLesson.level} />
+                    <span className="text-slate-400 text-xs">{nextLesson.estimatedMinutes} min</span>
+                  </div>
+                  <p className="text-slate-800 font-bold text-base truncate">{nextLesson.title}</p>
+                  <p className="text-slate-500 text-xs mt-0.5">{nextLesson.category}</p>
+                </div>
+                <div className="gradient-primary rounded-xl p-2.5 glow-purple flex-shrink-0">
+                  <ChevronRight size={18} className="text-white" />
+                </div>
               </div>
-              <div className="gradient-primary rounded-xl p-2.5 glow-purple flex-shrink-0">
-                <ChevronRight size={18} className="text-white" />
-              </div>
+            </button>
+          ) : (
+            <div className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-center text-sm text-slate-500">
+              {lessonsLoading
+                ? 'Loading lessons…'
+                : lessonsError
+                ? "Couldn't load lessons. Check your connection and reopen the app."
+                : 'No lessons available yet.'}
             </div>
-          </button>
+          )}
         </motion.div>
 
         {/* ── Gaps Tracker ────────────────────────────────────────── */}

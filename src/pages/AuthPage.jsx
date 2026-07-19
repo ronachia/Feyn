@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, 
+import {
+  Mail, Lock, Eye, EyeOff, ArrowRight, Loader2,
   Sparkles, Gift, Zap, Github, Chrome, Apple,
   CheckCircle2, AlertCircle, ArrowLeft
 } from 'lucide-react'
 import { useSignIn, useSignUp, useClerk, useAuth } from '@clerk/clerk-react'
+import { isNativePlatform } from '../services/platform'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AUTH PAGE PRINCIPAL - Entry point com tabs de Sign In / Sign Up
@@ -14,12 +16,18 @@ import { useSignIn, useSignUp, useClerk, useAuth } from '@clerk/clerk-react'
 export default function AuthPage() {
   const [mode, setMode] = useState('signin') // 'signin' | 'signup'
   const { isSignedIn } = useAuth()
-  
-  // Se já está logado, redireciona
-  if (isSignedIn) {
-    window.location.href = '/home'
-    return null
-  }
+  const navigate = useNavigate()
+
+  // Se já está logado, redireciona.
+  // NOTE: era `window.location.href = '/home'` — isso forçava um full page
+  // reload. Dentro do WebView do Capacitor (origem https://localhost) isso
+  // é a causa mais provável do "site can't be reached" visto no Android:
+  // navegação de página inteira em vez de troca de rota do próprio SPA.
+  useEffect(() => {
+    if (isSignedIn) navigate('/home', { replace: true })
+  }, [isSignedIn, navigate])
+
+  if (isSignedIn) return null
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-blue-50/30 flex items-center justify-center p-4">
@@ -183,32 +191,42 @@ function SignInForm() {
 
   return (
     <div className="space-y-5">
-      {/* Social Login */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { id: 'google', icon: Chrome, label: 'Google', color: 'hover:bg-red-50 hover:border-red-200' },
-          { id: 'apple', icon: Apple, label: 'Apple', color: 'hover:bg-slate-100 hover:border-slate-300' },
-          { id: 'github', icon: Github, label: 'GitHub', color: 'hover:bg-slate-800 hover:text-white' }
-        ].map(({ id, icon: Icon, label, color }) => (
-          <button
-            key={id}
-            onClick={() => handleSocial(id)}
-            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border border-slate-200 transition-all ${color}`}
-          >
-            <Icon size={20} />
-            <span className="text-xs font-medium text-slate-600">{label}</span>
-          </button>
-        ))}
-      </div>
+      {/* Social Login — hidden on native: Clerk's authenticateWithRedirect
+          does a full-page window.location redirect to a relative URL, which
+          only makes sense on the web. Inside the Capacitor WebView there's
+          no real https://localhost/auth/callback to redirect back to, so
+          this reliably breaks (ERR_CONNECTION_REFUSED). Needs a proper
+          native OAuth flow (custom scheme + Clerk Dashboard config) before
+          re-enabling here — tracked as a follow-up, not fixed by this hide. */}
+      {!isNativePlatform() && (
+        <>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { id: 'google', icon: Chrome, label: 'Google', color: 'hover:bg-red-50 hover:border-red-200' },
+              { id: 'apple', icon: Apple, label: 'Apple', color: 'hover:bg-slate-100 hover:border-slate-300' },
+              { id: 'github', icon: Github, label: 'GitHub', color: 'hover:bg-slate-800 hover:text-white' }
+            ].map(({ id, icon: Icon, label, color }) => (
+              <button
+                key={id}
+                onClick={() => handleSocial(id)}
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border border-slate-200 transition-all ${color}`}
+              >
+                <Icon size={20} />
+                <span className="text-xs font-medium text-slate-600">{label}</span>
+              </button>
+            ))}
+          </div>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-2 text-slate-400">or continue with email</span>
-        </div>
-      </div>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white px-2 text-slate-400">or continue with email</span>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Strategy Toggle */}
       <div className="flex gap-2 p-1 bg-slate-100 rounded-xl">
@@ -443,32 +461,36 @@ function SignUpForm() {
 
   return (
     <div className="space-y-5">
-      {/* Social Signup */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { id: 'google', icon: Chrome, label: 'Google', color: 'hover:bg-red-50 hover:border-red-200' },
-          { id: 'apple', icon: Apple, label: 'Apple', color: 'hover:bg-slate-100 hover:border-slate-300' },
-          { id: 'github', icon: Github, label: 'GitHub', color: 'hover:bg-slate-800 hover:text-white' }
-        ].map(({ id, icon: Icon, label, color }) => (
-          <button
-            key={id}
-            onClick={() => handleSocial(id)}
-            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border border-slate-200 transition-all ${color}`}
-          >
-            <Icon size={20} />
-            <span className="text-xs font-medium text-slate-600">{label}</span>
-          </button>
-        ))}
-      </div>
+      {/* Social Signup — hidden on native, same reason as SignInForm above. */}
+      {!isNativePlatform() && (
+        <>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { id: 'google', icon: Chrome, label: 'Google', color: 'hover:bg-red-50 hover:border-red-200' },
+              { id: 'apple', icon: Apple, label: 'Apple', color: 'hover:bg-slate-100 hover:border-slate-300' },
+              { id: 'github', icon: Github, label: 'GitHub', color: 'hover:bg-slate-800 hover:text-white' }
+            ].map(({ id, icon: Icon, label, color }) => (
+              <button
+                key={id}
+                onClick={() => handleSocial(id)}
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border border-slate-200 transition-all ${color}`}
+              >
+                <Icon size={20} />
+                <span className="text-xs font-medium text-slate-600">{label}</span>
+              </button>
+            ))}
+          </div>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-2 text-slate-400">or create with email</span>
-        </div>
-      </div>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white px-2 text-slate-400">or create with email</span>
+            </div>
+          </div>
+        </>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
