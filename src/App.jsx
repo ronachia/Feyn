@@ -1,7 +1,7 @@
 import { useEffect, lazy, Suspense } from 'react'
 import * as Sentry from '@sentry/react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
-import { SignedIn, SignedOut, RedirectToSignIn, useUser, useAuth } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, useUser, useAuth } from '@clerk/clerk-react'
 import useNotifications from './hooks/useNotifications'
 import useAppStore from './store/useAppStore'
 import useProgressSync from './hooks/useProgressSync'
@@ -33,10 +33,19 @@ function RequireAdmin({ children }) {
 }
 
 function RequireAuth({ children }) {
+  // NOTE: era `<RedirectToSignIn />` do Clerk — isso navega para a página
+  // hospedada do próprio Clerk (fora do app, com seu próprio Google/Apple/
+  // GitHub embutido), não para a nossa tela /auth. Dentro do WebView do
+  // Capacitor isso é a causa real da tela branca após "Sign in with
+  // Google": o app sai do domínio local, o OAuth do Clerk tenta redirecionar
+  // de volta pra origem relativa (https://localhost/capacitor://localhost),
+  // que não existe de verdade fora do navegador. Usando <Navigate> (como
+  // RequireOnboarding/RequireAdmin já faziam) o app fica dentro do próprio
+  // SPA e cai na nossa /auth, que já esconde login social em nativo.
   return (
     <>
       <SignedIn>{children}</SignedIn>
-      <SignedOut><RedirectToSignIn /></SignedOut>
+      <SignedOut><Navigate to="/auth" replace /></SignedOut>
     </>
   )
 }

@@ -142,7 +142,133 @@ function SignInForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // Password reset: 'idle' → clicked "Forgot password?" sends the email code
+  // and moves to 'resetting', which shows fields for the code + new password.
+  const [resetStage, setResetStage] = useState('idle') // 'idle' | 'resetting'
+  const [resetCode, setResetCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
+
   if (!isLoaded) return <LoadingState />
+
+  const handleForgotPassword = async () => {
+    setError('')
+    setSuccess('')
+    if (!email) {
+      setError('Enter your email above first, then tap "Forgot password?"')
+      return
+    }
+    setResetLoading(true)
+    try {
+      await signIn.create({ strategy: 'reset_password_email_code', identifier: email })
+      setResetStage('resetting')
+      setSuccess('Code sent! Check your email.')
+    } catch (err) {
+      setError(err.errors?.[0]?.message || 'Could not send reset code')
+    } finally {
+      setResetLoading(false)
+    }
+  }
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault()
+    setError('')
+    setResetLoading(true)
+    try {
+      const result = await signIn.attemptFirstFactor({
+        strategy: 'reset_password_email_code',
+        code: resetCode,
+        password: newPassword,
+      })
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId })
+      } else {
+        setError('Could not reset password — please check the code and try again.')
+      }
+    } catch (err) {
+      setError(err.errors?.[0]?.message || 'Invalid or expired code')
+    } finally {
+      setResetLoading(false)
+    }
+  }
+
+  if (resetStage === 'resetting') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="space-y-5"
+      >
+        <div className="text-center space-y-1">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-violet-100 flex items-center justify-center">
+            <Mail size={32} className="text-violet-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-800 pt-2">Reset your password</h3>
+          <p className="text-sm text-slate-500">
+            Enter the code sent to <strong>{email}</strong> and choose a new password.
+          </p>
+        </div>
+
+        <form onSubmit={handleResetPassword} className="space-y-4">
+          <input
+            type="text"
+            value={resetCode}
+            onChange={(e) => setResetCode(e.target.value)}
+            placeholder="Enter 6-digit code"
+            maxLength={6}
+            required
+            className="w-full text-center tracking-[0.5em] font-mono text-lg bg-slate-50 border border-slate-200 rounded-xl py-3 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+          />
+
+          <div className="relative">
+            <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type={showPass ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="New password (8+ characters)"
+              required
+              minLength={8}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-12 py-3 text-sm focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPass(!showPass)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
+              <AlertCircle size={16} className="text-rose-500 flex-shrink-0" />
+              <p className="text-rose-600 text-xs">{error}</p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={resetLoading || resetCode.length !== 6 || newPassword.length < 8}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-violet-500 to-purple-600 text-white"
+          >
+            {resetLoading ? (
+              <><Loader2 size={18} className="animate-spin" /> Resetting...</>
+            ) : (
+              'Reset Password'
+            )}
+          </button>
+        </form>
+
+        <button
+          onClick={() => { setResetStage('idle'); setError(''); setSuccess('') }}
+          className="text-xs text-slate-400 hover:text-slate-600 flex items-center justify-center gap-1 mx-auto"
+        >
+          <ArrowLeft size={12} /> Back to sign in
+        </button>
+      </motion.div>
+    )
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -289,10 +415,11 @@ function SignInForm() {
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={() => signIn?.create({ strategy: 'reset_password_email_code', identifier: email })}
-              className="text-xs text-violet-600 hover:text-violet-700 font-medium"
+              onClick={handleForgotPassword}
+              disabled={resetLoading}
+              className="text-xs text-violet-600 hover:text-violet-700 font-medium disabled:opacity-50"
             >
-              Forgot password?
+              {resetLoading ? 'Sending...' : 'Forgot password?'}
             </button>
           </div>
         )}
