@@ -450,6 +450,12 @@ function SignInForm() {
           )}
         </AnimatePresence>
 
+        {/* Mount point Clerk's bot-protection (Turnstile) widget needs to
+            render its challenge. Without this div, signIn.create() hangs
+            forever waiting for a captcha token whenever Clerk decides to
+            require one — no error, just stuck on "Please wait...". */}
+        <div id="clerk-captcha" />
+
         <button
           type="submit"
           disabled={loading || !email || (strategy === 'password' && !password)}
@@ -718,6 +724,12 @@ function SignUpForm() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Mount point for Clerk's bot-protection (Turnstile) widget — see
+            the same note in SignInForm. Sign-up has captcha_enabled: true
+            on this Clerk instance, so this is required for signUp.create()
+            to ever resolve. */}
+        <div id="clerk-captcha" />
 
         {/* Submit */}
         <button
