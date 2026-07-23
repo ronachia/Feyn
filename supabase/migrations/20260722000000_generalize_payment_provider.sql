@@ -10,3 +10,10 @@ alter table profiles add column if not exists payment_provider text default 'mer
 update profiles set payment_provider = 'mercado_pago' where payment_provider is null;
 
 create index if not exists idx_profiles_payment_provider on profiles(payment_provider);
+
+-- Colunas mortas de uma migração Stripe/Asaas anterior (nunca usadas em código,
+-- pendência já apontada no CHANGELOG antigo e nunca executada).
+alter table profiles drop column if exists stripe_customer_id;
+alter table profiles drop column if exists stripe_subscription_id;
+alter table profiles drop column if exists asaas_customer_id;
+alter table profiles drop column if exists asaas_payment_id;

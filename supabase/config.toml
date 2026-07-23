@@ -22,7 +22,7 @@ verify_jwt = false
 [functions.create-lesson]
 verify_jwt = false
 
-[functions.create-mercado-pago-subscription]
+[functions.create-subscription]
 verify_jwt = false
 
 [functions.mercado-pago-webhook]
