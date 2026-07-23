@@ -1,6 +1,5 @@
 -- FeynLearn Supabase Schema
 -- Auth: Clerk (not Supabase Auth). All DB access via Edge Functions + service role key.
--- Execute este SQL no SQL Editor do seu projeto Supabase
 
 -- ── Profiles ─────────────────────────────────────────────────────────────────
 create table if not exists profiles (
@@ -11,8 +10,6 @@ create table if not exists profiles (
   onboarded_at    timestamptz,
   placement_sub_level text,
   is_premium      bool default false,
-  mercado_pago_customer_id      text,
-  mercado_pago_subscription_id   text,
   created_at      timestamptz default now()
 );
 
@@ -37,10 +34,6 @@ create table if not exists progress (
 -- ── Migrations (safe to run on existing DB) ───────────────────────────────────
 alter table profiles add column if not exists placement_sub_level text;
 alter table profiles add column if not exists is_premium bool default false;
--- Payment fields (Mercado Pago)
-alter table profiles add column if not exists mercado_pago_customer_id text;
-alter table profiles add column if not exists mercado_pago_payment_id text;
-alter table profiles add column if not exists mercado_pago_subscription_id text;
 alter table profiles add column if not exists premium_plan text; -- 'monthly' or 'yearly'
 alter table profiles add column if not exists premium_started_at timestamptz;
 alter table profiles add column if not exists premium_expires_at timestamptz;

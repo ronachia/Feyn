@@ -1,7 +1,6 @@
 -- ── Lessons Table ─────────────────────────────────────────────────────────────
 -- Conteúdo de lições migrado de lessons.js para o banco.
 -- Permite edição sem deploy via painel admin.
--- Execute no SQL Editor do Supabase.
 
 CREATE TABLE IF NOT EXISTS lessons (
   id                serial PRIMARY KEY,

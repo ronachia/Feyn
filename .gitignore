@@ -7,3 +7,4 @@ dist/
 node_modules
 android/app/src/main/assets/public/
 __MACOSX/
+supabase/.temp/

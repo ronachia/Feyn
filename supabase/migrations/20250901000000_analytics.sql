@@ -1,6 +1,5 @@
 -- ── Analytics Events ──────────────────────────────────────────────────────────
 -- Tabela de eventos educacionais para análise de aprendizagem.
--- Execute no SQL Editor do Supabase.
 
 CREATE TABLE IF NOT EXISTS analytics_events (
   id            bigserial PRIMARY KEY,
