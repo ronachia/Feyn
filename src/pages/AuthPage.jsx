@@ -142,6 +142,13 @@ function SignInForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // 2FA: signIn.create() can come back 'needs_second_factor' instead of
+  // 'complete' when the account has MFA enabled — without this, the form
+  // just silently stopped with no error and no way to continue.
+  const [secondFactor, setSecondFactor] = useState(null) // { strategy } | null
+  const [secondFactorCode, setSecondFactorCode] = useState('')
+  const [secondFactorLoading, setSecondFactorLoading] = useState(false)
+
   // Password reset: 'idle' → clicked "Forgot password?" sends the email code
   // and moves to 'resetting', which shows fields for the code + new password.
   const [resetStage, setResetStage] = useState('idle') // 'idle' | 'resetting'
@@ -189,6 +196,27 @@ function SignInForm() {
       setError(err.errors?.[0]?.message || 'Invalid or expired code')
     } finally {
       setResetLoading(false)
+    }
+  }
+
+  const handleSecondFactorSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setSecondFactorLoading(true)
+    try {
+      const result = await signIn.attemptSecondFactor({
+        strategy: secondFactor.strategy,
+        code: secondFactorCode,
+      })
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId })
+      } else {
+        setError('Could not verify code — please check it and try again.')
+      }
+    } catch (err) {
+      setError(err.errors?.[0]?.message || 'Invalid or expired code')
+    } finally {
+      setSecondFactorLoading(false)
     }
   }
 
@@ -270,6 +298,64 @@ function SignInForm() {
     )
   }
 
+  if (secondFactor) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="space-y-5"
+      >
+        <div className="text-center space-y-1">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-violet-100 flex items-center justify-center">
+            <Lock size={32} className="text-violet-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-800 pt-2">Two-factor verification</h3>
+          <p className="text-sm text-slate-500">
+            Enter the verification code sent to <strong>{email}</strong>.
+          </p>
+        </div>
+
+        <form onSubmit={handleSecondFactorSubmit} className="space-y-4">
+          <input
+            type="text"
+            value={secondFactorCode}
+            onChange={(e) => setSecondFactorCode(e.target.value)}
+            placeholder="Enter 6-digit code"
+            maxLength={6}
+            required
+            className="w-full text-center tracking-[0.5em] font-mono text-lg bg-slate-50 border border-slate-200 rounded-xl py-3 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+          />
+
+          {error && (
+            <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
+              <AlertCircle size={16} className="text-rose-500 flex-shrink-0" />
+              <p className="text-rose-600 text-xs">{error}</p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={secondFactorLoading || secondFactorCode.length !== 6}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-violet-500 to-purple-600 text-white"
+          >
+            {secondFactorLoading ? (
+              <><Loader2 size={18} className="animate-spin" /> Verifying...</>
+            ) : (
+              'Verify'
+            )}
+          </button>
+        </form>
+
+        <button
+          onClick={() => { setSecondFactor(null); setSecondFactorCode(''); setError('') }}
+          className="text-xs text-slate-400 hover:text-slate-600 flex items-center justify-center gap-1 mx-auto"
+        >
+          <ArrowLeft size={12} /> Back to sign in
+        </button>
+      </motion.div>
+    )
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -294,6 +380,16 @@ function SignInForm() {
         })
         if (result.status === 'complete') {
           await setActive({ session: result.createdSessionId })
+        } else if (result.status === 'needs_second_factor') {
+          const factor = result.supportedSecondFactors?.find((f) => f.primary) || result.supportedSecondFactors?.[0]
+          if (factor?.strategy === 'email_code' || factor?.strategy === 'phone_code') {
+            await signIn.prepareSecondFactor({ strategy: factor.strategy })
+            setSecondFactor({ strategy: factor.strategy })
+          } else {
+            setError("This account's verification method isn't supported here yet.")
+          }
+        } else {
+          setError('Additional verification required — please try again.')
         }
       }
     } catch (err) {
