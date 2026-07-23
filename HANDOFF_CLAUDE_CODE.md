@@ -128,7 +128,53 @@ Resumo do que cada bloco resolveu:
   reproduzir lá também, considerar simplificar/remover o `AnimatePresence
   mode="wait"` em `Lesson.jsx` ou atualizar a versão do `framer-motion`.
 
-## BLOQUEIO ATUAL — login não funciona dentro do app empacotado (iOS)
+## RESOLVIDO (2026-07-23, sessão Claude Code) — login funcionando no app empacotado (iOS)
+
+O bloqueio abaixo (mantido como histórico) descrevia uma tela branca no
+WebView empacotado e levantava a hipótese de um problema arquitetural de
+cookie cross-domain do SDK web do Clerk dentro do WKWebView. **Essa hipótese
+estava errada** — ou pelo menos não era a causa da tela branca observada.
+
+**Causa raiz real**: o site publicado em `feynlearn.netlify.app` (pra onde
+`capacitor.config.json`'s `server.url` aponta, ver commit `7ca9ad8`) estava
+com a env var `VITE_CLERK_PUBLISHABLE_KEY` **ausente na configuração do
+projeto na Netlify** (só tinha `VITE_OPENAI_API_KEY`, `VITE_SUPABASE_ANON_KEY`,
+`VITE_SUPABASE_URL`). Sem a chave, `@clerk/clerk-react` lança
+`Missing publishableKey` e o app crasha silenciosamente no mount — tela
+branca tanto no browser normal quanto no WebView nativo, sem log de erro de
+rede porque a requisição nunca chega a acontecer. Isso não é específico de
+mobile: qualquer visitante real do site em produção via browser normal
+também estava vendo tela branca até esse fix.
+
+**Fix**: adicionada a env var na Netlify (mesma chave de teste do
+`.env.local`) via MCP, e disparado rebuild via `git push` (site é
+git-linked ao GitHub, branch `main`). Confirmado funcionando: build ficou
+`ready` com o commit novo, `feynlearn.netlify.app` carrega a tela de login
+completa no browser normal, e o WebView do simulador iOS também passou a
+renderizar a tela de login corretamente.
+
+**Teste end-to-end confirmado pelo usuário no simulador**: login com
+e-mail/senha funcionou, incluindo o fluxo de 2FA (código enviado por
+e-mail) — entrou normalmente. O SDK web do Clerk (modo dev) funciona sim
+dentro do WKWebView do Capacitor quando servido de um domínio https real
+(`server.url` no `capacitor.config.json` apontando pra
+`https://feynlearn.netlify.app` em vez de assets locais empacotados) — a
+teoria de que seria necessário migrar pra instância de produção do Clerk
+antes de mobile funcionar **não se confirmou como bloqueante**; pode ainda
+valer a pena migrar depois (ver "Ambiente / chaves"), mas não é mais um
+requisito para o login nativo funcionar.
+
+**Pendência secundária, não bloqueante**: durante a investigação, a
+automação de tap via simulador (Claude Code iOS Simulator tool) não
+disparava nenhuma atividade observável (sem log de rede/Clerk) ao tocar no
+botão "Sign In" — nem sucesso nem o "Please wait" documentado antes. O
+usuário testou manualmente no mesmo simulador e funcionou normalmente, então
+isso parece ser uma limitação da automação de tap (coordenada ou timing),
+não um bug do app. Não investigado a fundo — não é prioridade agora que o
+fluxo real funciona.
+
+<details>
+<summary>Bloqueio original (histórico, mantido pra contexto — a causa raiz correta é a descrita acima)</summary>
 
 **Sintoma**: login com e-mail/senha mostra "Please wait..." e trava para sempre
 (sem erro). Login social com Google redireciona pro Clerk e trava em tela
@@ -139,48 +185,14 @@ as requisições de rede pro Clerk (`sign_ins` em `premium-wallaby-58.clerk.acco
 completam rápido e sem erro (~700-900ms). O problema não é rede nem CORS — a
 API do Clerk responde normalmente.
 
-**Causa raiz mais provável**: `@clerk/clerk-react` é o SDK de **web**, feito pra
-rodar num browser normal, não dentro de um WebView nativo (Capacitor). Instâncias
-de **desenvolvimento** do Clerk dependem de sincronizar sessão entre o domínio do
-app e o Frontend API do Clerk via um mecanismo de cookie entre domínios (o
-`__clerk_db_jwt` que já apareceu como problema no teste do Android também). Isso
-depende de redirect/cookie cross-domain que não funciona de forma confiável
-dentro da origem isolada do WKWebView do Capacitor (`capacitor://localhost`).
-Resultado: a API confirma a sessão no servidor, mas o SDK no device nunca
-recebe/persiste o token — `setActive()` fica pendurado e `isSignedIn` nunca
-muda.
+**Causa raiz mais provável** (❌ não confirmada, ver acima): `@clerk/clerk-react`
+é o SDK de **web**, feito pra rodar num browser normal, não dentro de um
+WebView nativo (Capacitor). Instâncias de **desenvolvimento** do Clerk
+dependem de sincronizar sessão entre o domínio do app e o Frontend API do
+Clerk via um mecanismo de cookie entre domínios (o `__clerk_db_jwt` que já
+apareceu como problema no teste do Android também).
 
-Isso é consistente com **todos** os sintomas vistos: Google login trava em tela
-branca, "Please wait" trava no login por senha, e nada disso acontece na versão
-web (browser normal) do mesmo código.
-
-**Não foi resolvido ainda.** Não é um bug de lógica no nosso código — é uma
-limitação arquitetural de usar o SDK web do Clerk (modo dev) dentro de um
-WebView nativo.
-
-### Caminhos possíveis (decisão pendente do usuário)
-
-1. **Migrar Clerk para instância de produção com domínio próprio**
-   (ex: `clerk.feynlearn.app`). Instâncias de produção usam esquema de cookie
-   diferente (não dependem do dev-browser JWT sync), o que tende a resolver
-   isso. Exige ter um domínio configurado — na auditoria original o usuário
-   ainda não tinha domínio publicado. Mudança de código é pequena (troca de
-   chave pública + config de domínio no dashboard do Clerk), o trabalho real
-   está fora do código (DNS, dashboard do Clerk).
-
-2. **Reescrever a camada de auth pra algo nativo** (ex: `@clerk/clerk-expo`,
-   ou sair de Capacitor+React puro e ir para React Native, ou implementar
-   OAuth nativo via custom URL scheme). Envolve mais esforço, mas resolve o
-   problema na raiz (SDKs feitos especificamente pra apps nativos lidam com
-   sessão de forma diferente, sem depender de cookie cross-domain).
-
-3. **Testar o app via navegador comum por enquanto** (funciona normalmente,
-   já que o problema é específico do WebView empacotado) e deixar a decisão
-   de mobile pra depois.
-
-O usuário está avaliando se vale a pena **recomeçar a parte mobile do zero**
-numa stack nativa em vez de seguir com Capacitor — essa é a pergunta em aberto
-que motivou pedir esse resumo pro Claude Code.
+</details>
 
 ## Ambiente / chaves (não versionadas, estão em `.env` e `.env.local` no projeto)
 
