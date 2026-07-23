@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import * as Sentry from '@sentry/react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { SignedIn, SignedOut, useUser, useAuth } from '@clerk/clerk-react'
@@ -24,9 +24,26 @@ const AdminPanel     = lazy(() => import('./pages/admin/AdminPanel'))
 const AdminLessonEditor  = lazy(() => import('./pages/admin/AdminLessonEditor'))
 const AdminAnalytics     = lazy(() => import('./pages/admin/AdminAnalytics'))
 
+// Zustand's persist middleware rehydrates asynchronously (nativeStorage.js
+// wraps even localStorage in an async getItem — required for Capacitor
+// Preferences on native). Route guards that read persisted fields
+// (isAdmin, user) need to wait for that, or they see the default/empty
+// value on first render and redirect away before hydration finishes —
+// e.g. a real admin hitting /admin directly always bounced to /home.
+function useHasHydrated() {
+  const [hydrated, setHydrated] = useState(useAppStore.persist.hasHydrated())
+  useEffect(() => {
+    if (hydrated) return
+    return useAppStore.persist.onFinishHydration(() => setHydrated(true))
+  }, [hydrated])
+  return hydrated
+}
+
 function RequireAdmin({ children }) {
   const isAdmin = useAppStore((s) => s.isAdmin)
+  const hasHydrated = useHasHydrated()
   const { isSignedIn } = useUser()
+  if (!hasHydrated) return <LoadingScreen />
   if (!isSignedIn) return <Navigate to="/auth" replace />
   if (!isAdmin) return <Navigate to="/home" replace />
   return children
@@ -53,7 +70,8 @@ function RequireAuth({ children }) {
 function RequireOnboarding({ children }) {
   const { isSignedIn, isLoaded } = useUser()
   const user = useAppStore((s) => s.user)
-  if (!isLoaded) return <LoadingScreen />
+  const hasHydrated = useHasHydrated()
+  if (!isLoaded || !hasHydrated) return <LoadingScreen />
   if (!isSignedIn) return <Navigate to="/auth" replace />
   if (!user) return <Navigate to="/" replace />
   return children
@@ -152,6 +170,8 @@ export default function App() {
 function OnboardingGuard() {
   const { isSignedIn } = useUser()
   const user = useAppStore((s) => s.user)
+  const hasHydrated = useHasHydrated()
+  if (!hasHydrated) return <LoadingScreen />
   if (!isSignedIn) return <Navigate to="/auth" replace />
   if (user && !user.placementDone) return <Navigate to="/placement" replace />
   if (user) return <Navigate to="/home" replace />

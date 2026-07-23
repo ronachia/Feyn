@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Flame, BookOpen, Target, Trash2, TrendingUp, Zap, Crown, Bell, Globe, LogOut, Moon, ChevronRight } from 'lucide-react'
+import { Flame, BookOpen, Target, Trash2, TrendingUp, Zap, Crown, Bell, Globe, LogOut, Moon, ChevronRight, ShieldCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
@@ -20,7 +20,7 @@ export default function Profile() {
     streak, completedLessons, gaps, sessionHistory,
     resetProgress, xp, earnedBadges,
     isPremium, activatePremium, deactivatePremium, language, setLanguage,
-    darkMode, setDarkMode,
+    darkMode, setDarkMode, isAdmin,
   } = useAppStore()
   const levelInfo = getLevelInfo(xp || 0)
   const { notificationsEnabled, isSupported, enable, disable } = useNotifications()
@@ -100,6 +100,23 @@ export default function Profile() {
             <div className="flex-1 text-left">
               <p className="text-slate-800 font-semibold text-sm">Upgrade to Premium</p>
               <p className="text-gray-500 text-xs">Voice · Teach mode · Custom lessons · Unlimited AI</p>
+            </div>
+            <ChevronRight size={16} className="text-gray-500" />
+          </button>
+        )}
+
+        {/* ── Admin Panel (only for is_admin accounts) ─────────────── */}
+        {isAdmin && (
+          <button
+            onClick={() => navigate('/admin')}
+            className="w-full flex items-center gap-3 bg-app-card border border-app-border rounded-2xl p-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+              <ShieldCheck size={20} className="text-purple-400" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-slate-800 font-semibold text-sm">Admin Panel</p>
+              <p className="text-gray-500 text-xs">Manage lessons · view analytics</p>
             </div>
             <ChevronRight size={16} className="text-gray-500" />
           </button>

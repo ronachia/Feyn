@@ -17,6 +17,11 @@ empacotado. Repositório: `github.com/ronachia/Feyn` (branch `main`).
 ## O que já foi auditado e corrigido (commits, mais recente primeiro)
 
 ```
+5ca72eb fix: handle needs_second_factor in sign-in (2FA silently failed)
+64ff8bd chore: config.toml -> create-subscription, drop dead Stripe/Asaas columns
+2b940f6 refactor: decouple Mercado Pago behind a PaymentProvider interface
+bcc1f17 chore: clean up root clutter, consolidate SQL into supabase/migrations/
+4e8690e chore: organize marketing assets into marketing/ folder, add handoff doc
 9f8a2de fix: add clerk-captcha mount point, sign-in hangs forever without it
 07f28b5 fix: reset password flow ausente + RequireAuth redirecionando pro Clerk hosted
 7575758 fix: crash on empty lessons list, broken native login redirect
@@ -80,6 +85,48 @@ Resumo do que cada bloco resolveu:
   banner de erro visível.
 - Aviso de limite diário de IA agora aparece já na tela de intro da lição (não
   só no momento de submeter a resposta).
+
+**Sessão Claude Code (reorganização pré-domínio + testes end-to-end)**
+- Raiz limpa: `AUDIT_REPORT.md`, `CHANGELOG.md`, `PARECER_AUDITORIA_MOBILE.md` e
+  `__MACOSX/` removidos (obsoletos/duplicados, histórico continua no git log).
+  Schema do banco consolidado em `supabase/migrations/` (antes eram 4 `.sql`
+  soltos na raiz, aplicados manualmente).
+- **Mercado Pago desacoplado** atrás de uma interface `PaymentProvider`
+  (`supabase/functions/_shared/payments/`) — necessário porque o app vai
+  expandir pra fora do Brasil, onde MP não é opção. `create-mercado-pago-subscription`
+  virou `create-subscription` (genérico); `create-mercado-pago-checkout` (morta,
+  não usada) foi removida. Colunas do banco generalizadas:
+  `mercado_pago_customer_id/subscription_id/payment_id` → `payment_provider_*`
+  + nova coluna `payment_provider`. De brinde, encontrei e removi colunas mortas
+  de uma migração Stripe/Asaas anterior (`stripe_customer_id`,
+  `stripe_subscription_id`, `asaas_customer_id`, `asaas_payment_id`) que nunca
+  tinham sido limpas — e 4 Edge Functions mortas ainda ativas no Supabase
+  (`stripe-webhook`, `create-checkout-session`, `create-asaas-checkout`,
+  `asaas-webhook`) que precisam ser deletadas manualmente (`supabase functions
+  delete <nome>` — sem tool de MCP pra isso).
+- **Bug real encontrado testando com conta real (2FA ativado)**: `SignInForm`
+  em `AuthPage.jsx` só tratava `signIn.create()` retornando `status: 'complete'`.
+  Contas com 2FA voltam `needs_second_factor` — o form não tratava esse caso,
+  então o login **falhava silenciosamente** (sem erro, sem loading, só voltava
+  ao normal). Corrigido: novo estágio de tela pra código de verificação
+  (`signIn.prepareSecondFactor` + `signIn.attemptSecondFactor`), testado
+  ponta-a-ponta com conta real. Isso não é specífico de mobile — acontecia
+  também no browser normal, pra qualquer conta com 2FA.
+- IA confirmada funcionando (`analyze-explanation` testado diretamente,
+  retornou feedback completo e coerente da OpenAI).
+- **Pendência registrada, não corrigida**: a tela de leitura da lição
+  (`/lesson/:id`, fase `read` em `Lesson.jsx`) por vezes trava em branco ao
+  sair da fase `intro` — o node antigo fica preso em `opacity: 0` sem nunca
+  ser removido nem o novo conteúdo aparecer. Hipótese mais provável: interação
+  conhecida entre `React.StrictMode` (ativo em `main.jsx`, só existe em dev)
+  e as animações de saída do `AnimatePresence` do Framer Motion em
+  `Lesson.jsx`'s `<Phase>` wrapper. Reproduzido de forma consistente em dev
+  (`npm run dev`), inclusive após restart limpo do servidor — **não testado
+  ainda se acontece em build de produção** (StrictMode se desliga sozinho no
+  build, então é possível que seja só um artefato de dev). Próximo passo se
+  for investigar: testar com `npm run build && npm run preview`, e se
+  reproduzir lá também, considerar simplificar/remover o `AnimatePresence
+  mode="wait"` em `Lesson.jsx` ou atualizar a versão do `framer-motion`.
 
 ## BLOQUEIO ATUAL — login não funciona dentro do app empacotado (iOS)
 
@@ -148,16 +195,21 @@ que motivou pedir esse resumo pro Claude Code.
 
 ## Estado do git
 
-- Branch `main` sincronizada com `origin/main` até o commit `9f8a2de`.
+- Branch `main` sincronizada com `origin/main` até o commit `64ff8bd`
+  (o commit `5ca72eb` do fix de 2FA ainda está só local, não deu push ainda).
 - Push feito manualmente com token pessoal (o usuário disse que ia revogar o
   token depois de usar — se for pedir push de novo, provavelmente vai precisar
-  gerar um novo).
-- Há arquivos deletados não commitados na raiz (`FEYNLEARN_MASTER_DOC.md`,
-  `FeynLearn_Calendario_Conteudo.xlsx`, `FeynLearn_Landing_Page.html`,
-  `FeynLearn_Pitch_Deck.pptx`, `FeynLearn_Plano_Marketing.docx`,
-  `FeynLearn_Teo_Identidade_Visual.docx`, `Teo_mascote.svg`) e uma pasta nova
-  não rastreada `marketing/` — parecem ter sido movidos de lugar numa sessão
-  separada de marketing; não commitei isso, fica pra confirmar antes.
+  gerar um novo). O push até `64ff8bd` funcionou normalmente nesta sessão.
+- Arquivos de marketing já commitados e organizados em `marketing/`
+  (`FEYNLEARN_MASTER_DOC.md`, `FeynLearn_Calendario_Conteudo.xlsx`,
+  `FeynLearn_Landing_Page.html`, `FeynLearn_Pitch_Deck.pptx`,
+  `FeynLearn_Plano_Marketing.docx`, `FeynLearn_Teo_Identidade_Visual.docx`,
+  `Teo_mascote.svg`).
+- `www.feynlearn.com.br` comprado; domínio adicionado no Netlify (primário) e
+  DNS delegado pro Netlify (nameservers trocados no registro.br) — propagação
+  em andamento, ainda resolvendo pros nameservers antigos na última checagem.
+  Depois de propagar: falta configurar a instância de produção do Clerk com
+  esse domínio (pausado a pedido do usuário até o DNS resolver).
 
 ## Outras pendências já conhecidas (não bloqueantes)
 
