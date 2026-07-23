@@ -3,7 +3,8 @@
   "appName": "FeynLearn",
   "webDir": "dist",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "url": "https://feynlearn.netlify.app"
   },
   "plugins": {
     "SplashScreen": {
