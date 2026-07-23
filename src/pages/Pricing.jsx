@@ -75,7 +75,7 @@ export default function Pricing() {
   const handleCheckout = async () => {
     setCheckoutLoading(true)
     try {
-      const { url } = await callEdgeFunction('create-mercado-pago-subscription', { billing })
+      const { url } = await callEdgeFunction('create-subscription', { billing })
       await openURL(url)
     } catch (err) {
       alert(err.message || 'Failed to start checkout. Try again.')
