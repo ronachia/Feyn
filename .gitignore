@@ -11,3 +11,7 @@ supabase/.temp/
 
 # Local Netlify folder
 .netlify
+
+# Android release signing — never commit the keystore or its credentials
+android/keystore/
+android/keystore.properties
