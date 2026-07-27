@@ -7,7 +7,8 @@ empacotado. Repositório: `github.com/ronachia/Feyn` (branch `main`).
 ## Stack
 
 - Frontend: React 18 + Vite + TailwindCSS + Zustand (persist) + Framer Motion
-- Auth: Clerk (`@clerk/clerk-react` ^5.61.6) — **instância de desenvolvimento**
+- Auth: Clerk (`@clerk/clerk-react` ^5.61.6) — **instância de produção**, domínio
+  `feynlearn.com.br` (migrado de dev em 2026-07-27, ver seção própria abaixo)
 - Backend: Supabase (Postgres + Edge Functions em Deno), RLS ativado
 - IA: OpenAI GPT-4o-mini + Whisper, sempre via Edge Functions (nunca client-side)
 - Pagamento: Mercado Pago (migrado de Asaas/Stripe antes desta sessão)
@@ -194,10 +195,64 @@ apareceu como problema no teste do Android também).
 
 </details>
 
+## RESOLVIDO (2026-07-27) — migração do Clerk para produção + bug crítico de sync
+
+**Migração Clerk dev → produção**: DNS de `feynlearn.com.br` propagou (nameservers
+NS1/Netlify) e SSL confirmado. Migração feita via `clerk deploy` (CLI oficial da
+Clerk, `npm install -g clerk`) em vez do dashboard manual — o CLI mesmo avisa
+quando um passo precisa de terminal interativo humano (ex: `clerk deploy`
+propriamente dito não roda via automação, mas `clerk config patch`, `clerk env
+pull`, `clerk users list/create` rodam normalmente via Bash). Registros DNS
+(`clerk`, `accounts`, `clkmail`, `clk._domainkey`, `clk2._domainkey`) criados via
+API da própria Netlify (`netlify api createDnsRecord` falhou com erro genérico;
+a chamada direta via `curl` na API REST da Netlify com o token do
+`~/Library/Preferences/netlify/config.json` funcionou). Chave nova
+(`pk_live_...`) atualizada na Netlify via `netlify env:set` (o MCP da Netlify
+caiu no meio da sessão; CLI local é um fallback confiável) + `CLERK_JWKS_URL`
+(`https://clerk.feynlearn.com.br/.well-known/jwks.json`) atualizado como secret
+do Supabase.
+
+**Dois bugs reais encontrados no processo**:
+- A config do Clerk (dev **e** produção) exigia `username` no cadastro
+  (`auth_username.required_for_sign_up: true`), mas o formulário de cadastro do
+  app nunca coleta username (zero referências no código-fonte) — todo cadastro
+  novo falhava com "Couldn't find your account" após verificar o e-mail.
+  Corrigido desativando a exigência de username via `clerk config patch` (dev
+  e prod).
+- Instância de produção tinha SMS/telefone como segundo fator + "device trust"
+  configurados (feature paga do plano Pro do Clerk) — bloqueava `clerk deploy`
+  pedindo upgrade. Desativado via `clerk config patch` já que o app só usa
+  e-mail como segundo fator.
+
+**Bug crítico e pré-existente, não relacionado a mobile nem a essa migração**:
+desde que o auth migrou de Supabase pra Clerk, **nenhuma conta nova sincronizou
+perfil ou progresso pro Supabase** — falha silenciosa (erro 400 capturado e só
+logado no console, nunca visível pro usuário). Causa raiz, duas partes:
+1. `profiles.id` (uuid) não tinha valor padrão, e o upsert do edge function
+   nunca envia esse campo → violação de not-null em todo insert novo.
+2. `progress.id` ainda era foreign key pra `auth.users(id)` (resquício de antes
+   da migração pro Clerk) — como usuários Clerk nunca ganham linha em
+   `auth.users`, todo insert violava a FK. `progress.id` é na verdade um link
+   1:1 com `profiles.id`; a FK foi trocada pra apontar pra lá.
+   `sync-progress`/`get-profile` também assumiam uma coluna `progress.clerk_user_id`
+   que nunca existiu — corrigido pra buscar o profile primeiro e linkar por
+   `id`. Migrations: `20260727205219_profiles_id_default_uuid.sql` e
+   `20260727205653_progress_fk_to_profiles_not_auth_users.sql`. Edge functions
+   `sync-progress`/`get-profile` redeployados. Testado e confirmado com conta
+   real de teste (`ronaldo.chiarelli@teki.digital`).
+- Histórico de migrations do Supabase (`supabase_migrations.schema_migrations`)
+  estava **vazio** antes dessa sessão — o schema vivo do banco nunca foi criado
+  pelas migrations versionadas do repo, divergiu por fora ao longo do tempo.
+  As duas migrations novas foram aplicadas via `apply_migration` (fica
+  registrado corretamente); migrations antigas continuam não registradas.
+
 ## Ambiente / chaves (não versionadas, estão em `.env` e `.env.local` no projeto)
 
-- `VITE_CLERK_PUBLISHABLE_KEY` — chave de **teste** (`pk_test_...`,
-  instância `premium-wallaby-58.clerk.accounts.dev`)
+- `VITE_CLERK_PUBLISHABLE_KEY` — chave de **produção** (`pk_live_...`,
+  instância vinculada a `clerk.feynlearn.com.br`) desde 2026-07-27. A instância
+  de dev (`premium-wallaby-58.clerk.accounts.dev`, `pk_test_...`) continua
+  existindo separada, com sua própria base de usuários — contas de teste
+  antigas criadas em dev não existem em produção.
 - `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` — projeto
   `lhsjidzooiexbyodnnzw.supabase.co` (já teve o projeto pausado uma vez por
   inatividade — plano free do Supabase pausa sozinho; se voltar a dar erro
@@ -207,21 +262,18 @@ apareceu como problema no teste do Android também).
 
 ## Estado do git
 
-- Branch `main` sincronizada com `origin/main` até o commit `64ff8bd`
-  (o commit `5ca72eb` do fix de 2FA ainda está só local, não deu push ainda).
-- Push feito manualmente com token pessoal (o usuário disse que ia revogar o
-  token depois de usar — se for pedir push de novo, provavelmente vai precisar
-  gerar um novo). O push até `64ff8bd` funcionou normalmente nesta sessão.
+- Branch `main` sincronizada com `origin/main` até o commit `23a92cf` (fix do
+  bug de sync profiles/progress). Todos os commits dessa sessão (fix de
+  hidratação, debug do capacitor server.url, doc do bloqueio mobile resolvido,
+  fix de sync) já foram dados push.
 - Arquivos de marketing já commitados e organizados em `marketing/`
   (`FEYNLEARN_MASTER_DOC.md`, `FeynLearn_Calendario_Conteudo.xlsx`,
   `FeynLearn_Landing_Page.html`, `FeynLearn_Pitch_Deck.pptx`,
   `FeynLearn_Plano_Marketing.docx`, `FeynLearn_Teo_Identidade_Visual.docx`,
   `Teo_mascote.svg`).
-- `www.feynlearn.com.br` comprado; domínio adicionado no Netlify (primário) e
-  DNS delegado pro Netlify (nameservers trocados no registro.br) — propagação
-  em andamento, ainda resolvendo pros nameservers antigos na última checagem.
-  Depois de propagar: falta configurar a instância de produção do Clerk com
-  esse domínio (pausado a pedido do usuário até o DNS resolver).
+- `www.feynlearn.com.br` — DNS propagado (nameservers NS1/Netlify), SSL
+  confirmado, instância de produção do Clerk migrada e testada
+  end-to-end (ver seção "RESOLVIDO (2026-07-27)" acima). Nada pendente aqui.
 
 ## Outras pendências já conhecidas (não bloqueantes)
 
