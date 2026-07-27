@@ -20,6 +20,8 @@ const CreateLesson = lazy(() => import('./pages/CreateLesson'))
 const Pricing     = lazy(() => import('./pages/Pricing'))
 const Analytics   = lazy(() => import('./pages/Analytics'))
 const ThemePreview   = lazy(() => import('./pages/ThemePreview'))
+const Terms          = lazy(() => import('./pages/Terms'))
+const Privacy        = lazy(() => import('./pages/Privacy'))
 const AdminPanel     = lazy(() => import('./pages/admin/AdminPanel'))
 const AdminLessonEditor  = lazy(() => import('./pages/admin/AdminLessonEditor'))
 const AdminAnalytics     = lazy(() => import('./pages/admin/AdminAnalytics'))
@@ -156,6 +158,8 @@ export default function App() {
           <Route path="/profile"  element={<RequireOnboarding><Profile /></RequireOnboarding>} />
           <Route path="/placement" element={<RequireAuth><PlacementTest /></RequireAuth>} />
           <Route path="/theme-preview" element={<ThemePreview />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="/admin" element={<RequireAdmin><AdminPanel /></RequireAdmin>} />
           <Route path="/admin/lesson/:id"  element={<RequireAdmin><AdminLessonEditor /></RequireAdmin>} />
           <Route path="/admin/analytics"   element={<RequireAdmin><AdminAnalytics /></RequireAdmin>} />

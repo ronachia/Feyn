@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Mail, Lock, Eye, EyeOff, ArrowRight, Loader2,
@@ -843,8 +843,8 @@ function SignUpForm() {
 
       <p className="text-center text-xs text-slate-400">
         By signing up, you agree to our{' '}
-        <a href="#" className="text-violet-600 hover:underline">Terms</a> and{' '}
-        <a href="#" className="text-violet-600 hover:underline">Privacy</a>
+        <Link to="/terms" className="text-violet-600 hover:underline">Terms</Link> and{' '}
+        <Link to="/privacy" className="text-violet-600 hover:underline">Privacy</Link>
       </p>
     </div>
   )
