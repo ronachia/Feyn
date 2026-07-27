@@ -115,19 +115,15 @@ Resumo do que cada bloco resolveu:
   também no browser normal, pra qualquer conta com 2FA.
 - IA confirmada funcionando (`analyze-explanation` testado diretamente,
   retornou feedback completo e coerente da OpenAI).
-- **Pendência registrada, não corrigida**: a tela de leitura da lição
-  (`/lesson/:id`, fase `read` em `Lesson.jsx`) por vezes trava em branco ao
-  sair da fase `intro` — o node antigo fica preso em `opacity: 0` sem nunca
-  ser removido nem o novo conteúdo aparecer. Hipótese mais provável: interação
-  conhecida entre `React.StrictMode` (ativo em `main.jsx`, só existe em dev)
-  e as animações de saída do `AnimatePresence` do Framer Motion em
-  `Lesson.jsx`'s `<Phase>` wrapper. Reproduzido de forma consistente em dev
-  (`npm run dev`), inclusive após restart limpo do servidor — **não testado
-  ainda se acontece em build de produção** (StrictMode se desliga sozinho no
-  build, então é possível que seja só um artefato de dev). Próximo passo se
-  for investigar: testar com `npm run build && npm run preview`, e se
-  reproduzir lá também, considerar simplificar/remover o `AnimatePresence
-  mode="wait"` em `Lesson.jsx` ou atualizar a versão do `framer-motion`.
+- **RESOLVIDO/confirmado não-bloqueante (2026-07-27)**: a suspeita de tela
+  branca na fase `read` da lição (`Lesson.jsx`, interação entre
+  `React.StrictMode` e `AnimatePresence mode="wait"`) foi testada num build
+  de produção real (`npm run build && npm run preview`, conta de teste ponta
+  a ponta: onboarding → placement → lição). As transições `intro → read` e
+  `read → explain` renderizaram corretamente, sem tela branca. Confirma a
+  hipótese original: era um artefato exclusivo do `React.StrictMode` (que se
+  desliga sozinho em build de produção), não afeta usuários reais. Nenhuma
+  mudança de código necessária.
 
 ## RESOLVIDO (2026-07-23, sessão Claude Code) — login funcionando no app empacotado (iOS)
 
