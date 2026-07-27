@@ -24,10 +24,22 @@ Deno.serve(async (req) => {
         language:            profile.language,
         onboarded_at:        profile.onboardedAt,
         placement_sub_level: profile.placementSubLevel,
-      })
+      }, { onConflict: 'clerk_user_id' })
     }
 
     if (progress) {
+      // progress.id is a FK to profiles.id (1:1), not a clerk_user_id
+      // column of its own — look up the profile row first.
+      const { data: ownProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('clerk_user_id', userId)
+        .single()
+
+      if (profileError || !ownProfile) {
+        throw new Error('Profile not found for this user; complete onboarding before syncing progress')
+      }
+
       const sessionHistory = Array.isArray(progress.sessionHistory)
         ? progress.sessionHistory.slice(0, 100)
         : []
@@ -41,7 +53,7 @@ Deno.serve(async (req) => {
       // client-controlled sync ever accepts it again, a free user can reset
       // their own quota via localStorage/DevTools before it's even checked.
       await supabase.from('progress').upsert({
-        clerk_user_id:      userId,
+        id:                  ownProfile.id,
         xp:                 progress.xp,
         streak:             progress.streak,
         last_session_date:  progress.lastSessionDate,

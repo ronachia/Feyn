@@ -14,10 +14,13 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    const [{ data: profile }, { data: progress }] = await Promise.all([
-      supabase.from('profiles').select('*').eq('clerk_user_id', userId).single(),
-      supabase.from('progress').select('*').eq('clerk_user_id', userId).single(),
-    ])
+    const { data: profile } = await supabase
+      .from('profiles').select('*').eq('clerk_user_id', userId).single()
+
+    // progress.id is a FK to profiles.id (1:1), no clerk_user_id column of its own
+    const { data: progress } = profile
+      ? await supabase.from('progress').select('*').eq('id', profile.id).single()
+      : { data: null }
 
     return new Response(JSON.stringify({ profile, progress }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
