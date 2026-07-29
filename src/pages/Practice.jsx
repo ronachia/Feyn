@@ -155,7 +155,7 @@ export default function Practice() {
             <p className="text-gray-400">You just targeted your real weak spots.</p>
           </div>
           <div className="gradient-primary rounded-3xl px-8 py-5 glow-purple text-center">
-            <p className="text-blue-200 text-sm mb-1">Total XP earned</p>
+            <p className="text-violet-200 text-sm mb-1">Total XP earned</p>
             <p className="text-slate-800 font-bold text-4xl">+{totalXP} XP</p>
           </div>
           <div className="w-full bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">
@@ -189,7 +189,7 @@ export default function Practice() {
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-gray-400 text-xs">Exercise {current + 1} of {exercises.length}</span>
-            <span className="text-blue-400 text-xs font-semibold">+{totalXP} XP so far</span>
+            <span className="text-violet-400 text-xs font-semibold">+{totalXP} XP so far</span>
           </div>
           <div className="h-1.5 bg-app-border rounded-full overflow-hidden">
             <motion.div
@@ -213,8 +213,8 @@ export default function Practice() {
           >
             {/* Gap tag */}
             <div className="flex items-center gap-2">
-              <Zap size={14} className="text-blue-400" />
-              <span className="text-blue-400 text-xs font-semibold uppercase tracking-wider capitalize">
+              <Zap size={14} className="text-violet-400" />
+              <span className="text-violet-400 text-xs font-semibold uppercase tracking-wider capitalize">
                 Practicing: {exercise.targetGap}
               </span>
               <span className="ml-auto bg-app-card text-gray-400 text-xs px-2 py-0.5 rounded-full">
@@ -331,7 +331,7 @@ function FillBlank({ value, onChange, submitted, onSubmit, disabled }) {
         disabled={disabled}
         placeholder="Type your answer..."
         onKeyDown={(e) => e.key === 'Enter' && !submitted && value.trim() && onSubmit()}
-        className="w-full bg-app-card border border-app-border rounded-xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-blue-500/60 transition-colors disabled:opacity-50"
+        className="w-full bg-app-card border border-app-border rounded-xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-violet-500/60 transition-colors disabled:opacity-50"
       />
       {!submitted && (
         <button
@@ -357,7 +357,7 @@ function ErrorCorrection({ value, onChange, submitted, onSubmit, disabled }) {
         disabled={disabled}
         placeholder="Rewrite the sentence correctly..."
         rows={3}
-        className="w-full bg-app-card border border-app-border rounded-xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 resize-none focus:border-blue-500/60 transition-colors disabled:opacity-50"
+        className="w-full bg-app-card border border-app-border rounded-xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 resize-none focus:border-violet-500/60 transition-colors disabled:opacity-50"
       />
       {!submitted && (
         <button
@@ -385,7 +385,7 @@ function MultipleChoice({ options = [], selected, answer, submitted, onSelect })
           if (isAnswer)            style = 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300'
           else if (isSelected)     style = 'border-rose-500/50 bg-rose-500/10 text-rose-300'
         } else if (isSelected) {
-          style = 'border-blue-500/50 bg-blue-500/10 text-slate-800'
+          style = 'border-violet-500/50 bg-violet-500/10 text-slate-800'
         }
         return (
           <button
@@ -430,7 +430,7 @@ function WordOrder({ words, orderedWords, setOrderedWords, submitted, onSubmit, 
             key={`${word}-${i}`}
             onClick={() => removeWord(i)}
             disabled={disabled}
-            className="bg-blue-500/20 border border-blue-500/30 text-blue-300 text-sm px-3 py-1.5 rounded-lg"
+            className="bg-violet-500/20 border border-violet-500/30 text-violet-300 text-sm px-3 py-1.5 rounded-lg"
           >
             {word}
           </button>
@@ -449,7 +449,7 @@ function WordOrder({ words, orderedWords, setOrderedWords, submitted, onSubmit, 
               className={`text-sm px-3 py-1.5 rounded-lg border transition-all ${
                 used
                   ? 'border-app-border bg-app-surface text-gray-600 cursor-not-allowed'
-                  : 'border-app-border bg-app-card text-gray-600 hover:border-blue-500/40'
+                  : 'border-app-border bg-app-card text-gray-600 hover:border-violet-500/40'
               }`}
             >
               {word}

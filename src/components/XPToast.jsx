@@ -14,7 +14,7 @@ export default function XPToast({ xp, visible }) {
             <span className="text-2xl">⭐</span>
             <div>
               <p className="text-slate-800 font-bold text-lg">+{xp} XP</p>
-              <p className="text-blue-200 text-xs">Keep it up!</p>
+              <p className="text-violet-200 text-xs">Keep it up!</p>
             </div>
           </div>
         </motion.div>

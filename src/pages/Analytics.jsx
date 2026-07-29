@@ -14,7 +14,7 @@ const CHART_COLORS = { clarity: '#1D4ED8', coverage: '#0891B2', bar: '#3B82F6' }
 
 function StatCard({ icon: Icon, label, value, sub, color = 'blue' }) {
   const colors = {
-    blue:    'bg-blue-50    border-blue-200    text-blue-600',
+    blue:    'bg-violet-50    border-violet-200    text-violet-600',
     cyan:    'bg-cyan-50    border-cyan-200    text-cyan-700',
     emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
     amber:   'bg-amber-50   border-amber-200   text-amber-700',
@@ -209,7 +209,7 @@ export default function Analytics() {
             <div className="gradient-primary rounded-2xl p-4 glow-purple text-center">
               <Zap size={18} className="text-slate-800 mx-auto mb-1" />
               <p className="text-slate-800 font-bold text-2xl">{xp || 0}</p>
-              <p className="text-blue-200 text-xs">Total XP</p>
+              <p className="text-violet-200 text-xs">Total XP</p>
             </div>
             <div className="bg-app-card border border-app-border rounded-2xl p-4 text-center">
               <p className="text-2xl mb-1">🎯</p>

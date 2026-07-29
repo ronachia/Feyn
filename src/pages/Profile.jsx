@@ -85,17 +85,17 @@ export default function Profile() {
             </div>
             <div className="flex-1">
               <p className="text-slate-800 font-bold text-sm">Premium Active 👑</p>
-              <p className="text-blue-200 text-xs">All features unlocked · unlimited AI</p>
+              <p className="text-violet-200 text-xs">All features unlocked · unlimited AI</p>
             </div>
-            <button onClick={deactivatePremium} className="text-blue-300 text-xs underline">Cancel</button>
+            <button onClick={deactivatePremium} className="text-violet-300 text-xs underline">Cancel</button>
           </div>
         ) : (
           <button
             onClick={() => navigate('/pricing')}
-            className="w-full flex items-center gap-3 bg-app-card border border-blue-500/30 rounded-2xl p-4"
+            className="w-full flex items-center gap-3 bg-app-card border border-violet-500/30 rounded-2xl p-4"
           >
-            <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-              <Crown size={20} className="text-blue-400" />
+            <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+              <Crown size={20} className="text-violet-400" />
             </div>
             <div className="flex-1 text-left">
               <p className="text-slate-800 font-semibold text-sm">Upgrade to Premium</p>
@@ -147,11 +147,11 @@ export default function Profile() {
           <div className="gradient-primary rounded-3xl p-5 glow-purple">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-blue-200 text-xs mb-0.5">Current Level</p>
+                <p className="text-violet-200 text-xs mb-0.5">Current Level</p>
                 <p className="text-slate-800 font-bold text-xl">{levelInfo.current.emoji} {levelInfo.current.name}</p>
               </div>
               <div className="text-right">
-                <p className="text-blue-200 text-xs mb-0.5">Total XP</p>
+                <p className="text-violet-200 text-xs mb-0.5">Total XP</p>
                 <p className="text-slate-800 font-bold text-xl flex items-center gap-1 justify-end"><Zap size={16}/>{xp || 0}</p>
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function Profile() {
               <div className="h-full bg-white rounded-full transition-all" style={{ width: `${levelInfo.progress}%` }} />
             </div>
             {levelInfo.next && (
-              <p className="text-blue-200 text-xs mt-2">{levelInfo.xpToNext} XP to {levelInfo.next.name} {levelInfo.next.emoji}</p>
+              <p className="text-violet-200 text-xs mt-2">{levelInfo.xpToNext} XP to {levelInfo.next.name} {levelInfo.next.emoji}</p>
             )}
           </div>
         </motion.div>
@@ -169,7 +169,7 @@ export default function Profile() {
           <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-3">Your Stats</p>
           <div className="grid grid-cols-2 gap-3">
             <StatCard icon={<Flame size={18} className="text-orange-400" />}  value={streak}                 label="Day Streak"       sub="days"    />
-            <StatCard icon={<BookOpen size={18} className="text-blue-400" />} value={completedLessons.length} label="Lessons Done"    sub="completed" />
+            <StatCard icon={<BookOpen size={18} className="text-violet-400" />} value={completedLessons.length} label="Lessons Done"    sub="completed" />
             <StatCard icon={<Target size={18} className="text-cyan-400" />}   value={avgClarity}             label="Avg Clarity"      sub="/ 10"    />
             <StatCard icon={<TrendingUp size={18} className="text-emerald-400" />} value={avgCoverage}        label="Avg Coverage"     sub="/ 10"    />
           </div>
@@ -188,14 +188,14 @@ export default function Profile() {
                   key={badge.id}
                   className={`rounded-2xl p-3 border transition-all ${
                     earned
-                      ? 'bg-blue-500/10 border-blue-500/30'
+                      ? 'bg-violet-500/10 border-violet-500/30'
                       : 'bg-app-card border-app-border opacity-40'
                   }`}
                 >
                   <p className="text-2xl mb-1.5">{badge.icon}</p>
                   <p className={`text-sm font-semibold ${earned ? 'text-slate-800' : 'text-gray-500'}`}>{badge.name}</p>
                   <p className="text-gray-500 text-xs mt-0.5 leading-tight">{badge.desc}</p>
-                  {earned && <p className="text-blue-400 text-xs mt-1 font-medium">✓ Earned</p>}
+                  {earned && <p className="text-violet-400 text-xs mt-1 font-medium">✓ Earned</p>}
                 </div>
               )
             })}
@@ -218,10 +218,10 @@ export default function Profile() {
                   <div key={i} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                        gap.count >= 3 ? 'bg-rose-500/20' : gap.count === 2 ? 'bg-amber-500/20' : 'bg-blue-500/20'
+                        gap.count >= 3 ? 'bg-rose-500/20' : gap.count === 2 ? 'bg-amber-500/20' : 'bg-violet-500/20'
                       }`}>
                         <span className={`text-xs font-bold ${
-                          gap.count >= 3 ? 'text-rose-400' : gap.count === 2 ? 'text-amber-400' : 'text-blue-400'
+                          gap.count >= 3 ? 'text-rose-400' : gap.count === 2 ? 'text-amber-400' : 'text-violet-400'
                         }`}>{gap.count}x</span>
                       </div>
                       <div>
@@ -234,7 +234,7 @@ export default function Profile() {
                     <div className="flex gap-1">
                       {Array.from({ length: Math.min(gap.count, 5) }).map((_, j) => (
                         <div key={j} className={`w-1.5 h-4 rounded-full ${
-                          gap.count >= 3 ? 'bg-rose-500/70' : gap.count === 2 ? 'bg-amber-500/70' : 'bg-blue-500/70'
+                          gap.count >= 3 ? 'bg-rose-500/70' : gap.count === 2 ? 'bg-amber-500/70' : 'bg-violet-500/70'
                         }`} />
                       ))}
                     </div>
@@ -260,7 +260,7 @@ export default function Profile() {
                       <p className="text-gray-500 text-xs">{new Date(session.date).toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-blue-400 text-sm font-bold">{session.clarityScore}/10</p>
+                      <p className="text-violet-400 text-sm font-bold">{session.clarityScore}/10</p>
                       <p className="text-gray-600 text-xs">clarity</p>
                     </div>
                   </div>
@@ -276,7 +276,7 @@ export default function Profile() {
           <div className="bg-app-card border border-app-border rounded-3xl divide-y divide-app-border overflow-hidden">
             {/* Language */}
             <div className="flex items-center gap-3 px-4 py-4">
-              <Globe size={18} className="text-blue-400 flex-shrink-0" />
+              <Globe size={18} className="text-violet-400 flex-shrink-0" />
               <div className="flex-1">
                 <p className="text-slate-800 text-sm font-medium">{t('profile.language')}</p>
               </div>
@@ -296,7 +296,7 @@ export default function Profile() {
             </div>
             {/* Dark Mode */}
             <div className="flex items-center gap-3 px-4 py-4">
-              <Moon size={18} className="text-blue-400 flex-shrink-0" />
+              <Moon size={18} className="text-violet-400 flex-shrink-0" />
               <div className="flex-1">
                 <p className="text-slate-800 text-sm font-medium">Dark Mode</p>
               </div>
@@ -313,7 +313,7 @@ export default function Profile() {
             {/* Notifications */}
             {isSupported && (
               <div className="flex items-center gap-3 px-4 py-4">
-                <Bell size={18} className="text-blue-400 flex-shrink-0" />
+                <Bell size={18} className="text-violet-400 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-slate-800 text-sm font-medium">{t('profile.notifications')}</p>
                   <p className="text-gray-500 text-xs">{t('profile.notifications_sub')}</p>

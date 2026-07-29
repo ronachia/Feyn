@@ -105,7 +105,7 @@ export default function Lesson() {
                 </div>
 
                 <div className="w-full bg-app-card border border-app-border rounded-2xl p-4 text-left space-y-3">
-                  <p className="text-blue-400 text-sm font-semibold">How this session works:</p>
+                  <p className="text-violet-400 text-sm font-semibold">How this session works:</p>
                   {[
                     { step: '1', text: 'Read a short text carefully', time: '60 sec' },
                     { step: '2', text: 'Text disappears — explain it in English', time: '' },
@@ -238,14 +238,14 @@ export default function Lesson() {
                         onChange={(e) => setExplanation(e.target.value)}
                         placeholder="Explain in English... e.g. 'The text talks about...'"
                         rows={7}
-                        className="w-full bg-app-card border border-app-border rounded-2xl p-4 pr-12 text-gray-700 text-sm placeholder-gray-600 resize-none focus:border-blue-500/60 transition-colors"
+                        className="w-full bg-app-card border border-app-border rounded-2xl p-4 pr-12 text-gray-700 text-sm placeholder-gray-600 resize-none focus:border-violet-500/60 transition-colors"
                       />
                       <button
                         onClick={isRecording ? stopRecording : startRecording}
                         className={`absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
                           isRecording
                             ? 'bg-rose-500/20 border border-rose-500/40 text-rose-400 animate-pulse'
-                            : 'bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20'
+                            : 'bg-violet-500/10 border border-violet-500/20 text-violet-400 hover:bg-violet-500/20'
                         }`}
                         title={isRecording ? 'Stop recording' : 'Speak your explanation'}
                       >
@@ -327,7 +327,7 @@ export default function Lesson() {
                       <motion.div
                         animate={{ scale: [1, 1.3, 1] }}
                         transition={{ delay: i * 0.8, duration: 0.4 }}
-                        className="w-2 h-2 rounded-full bg-blue-500"
+                        className="w-2 h-2 rounded-full bg-violet-500"
                       />
                       <span className="text-gray-400 text-sm">{t}</span>
                     </motion.div>
@@ -387,7 +387,7 @@ export default function Lesson() {
 
                 {feedback && (
                   <div className="w-full grid grid-cols-2 gap-3">
-                    <ScoreCard label="Clarity"  value={feedback.clarityScore}  color="text-blue-400" />
+                    <ScoreCard label="Clarity"  value={feedback.clarityScore}  color="text-violet-400" />
                     <ScoreCard label="Coverage" value={feedback.coverageScore} color="text-cyan-400" />
                   </div>
                 )}
@@ -398,9 +398,9 @@ export default function Lesson() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="w-full gradient-primary rounded-2xl p-4 glow-purple text-center"
                   >
-                    <p className="text-blue-200 text-xs mb-0.5">XP Earned</p>
+                    <p className="text-violet-200 text-xs mb-0.5">XP Earned</p>
                     <p className="text-slate-800 font-bold text-3xl">+{sessionXP} XP</p>
-                    {!peeked && <p className="text-blue-200 text-xs mt-1">🧠 +30 no-peek bonus!</p>}
+                    {!peeked && <p className="text-violet-200 text-xs mt-1">🧠 +30 no-peek bonus!</p>}
                   </motion.div>
                 )}
 
@@ -413,7 +413,7 @@ export default function Lesson() {
                 <div className="w-full space-y-3">
                   <button
                     onClick={() => navigate('/practice')}
-                    className="w-full py-4 rounded-2xl bg-blue-500/20 border border-blue-500/30 text-blue-300 font-semibold flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-2xl bg-violet-500/20 border border-violet-500/30 text-violet-300 font-semibold flex items-center justify-center gap-2"
                   >
                     <Zap size={18} /> Practice Your Gaps
                   </button>

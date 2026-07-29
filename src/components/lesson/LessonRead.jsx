@@ -95,12 +95,12 @@ export default function LessonRead({ lesson, timeLeft, onReady }) {
         </div>
       )}
 
-      <div className="bg-app-card border border-blue-500/20 rounded-2xl p-4">
-        <p className="text-blue-400 text-sm font-semibold mb-2">🎯 Focus on understanding:</p>
+      <div className="bg-app-card border border-violet-500/20 rounded-2xl p-4">
+        <p className="text-violet-400 text-sm font-semibold mb-2">🎯 Focus on understanding:</p>
         <ul className="space-y-1">
           {lesson.keyPoints.slice(0, 3).map((kp, i) => (
             <li key={i} className="text-gray-400 text-sm flex items-start gap-2">
-              <span className="text-blue-500 mt-0.5">•</span>
+              <span className="text-violet-500 mt-0.5">•</span>
               <span>{kp}</span>
             </li>
           ))}

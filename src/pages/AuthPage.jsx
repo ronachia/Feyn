@@ -31,7 +31,7 @@ export default function AuthPage() {
   if (isSignedIn) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-blue-50/30 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/40 to-violet-100/30 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo Header */}
         <motion.div
@@ -875,7 +875,7 @@ function PasswordStrength({ password }) {
   const colors = {
     weak: 'bg-rose-400',
     fair: 'bg-amber-400',
-    good: 'bg-blue-400',
+    good: 'bg-violet-400',
     strong: 'bg-emerald-400'
   }
 

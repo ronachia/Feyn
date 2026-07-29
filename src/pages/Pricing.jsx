@@ -86,7 +86,7 @@ export default function Pricing() {
   if (verifying) {
     return (
       <div className="app-shell flex flex-col min-h-screen bg-app-bg items-center justify-center px-6 text-center gap-4">
-        <Loader2 size={40} className="text-blue-400 animate-spin" />
+        <Loader2 size={40} className="text-violet-400 animate-spin" />
         <p className="text-slate-800 font-semibold text-lg">Verifying your payment...</p>
         <p className="text-gray-400 text-sm">This usually takes a few seconds.</p>
       </div>
@@ -161,7 +161,7 @@ export default function Pricing() {
         {/* Premium highlights */}
         <div className="grid grid-cols-2 gap-3">
           {HIGHLIGHTS.map(({ icon: Icon, label, desc }) => (
-            <div key={label} className="bg-app-card border border-blue-500/20 rounded-2xl p-4">
+            <div key={label} className="bg-app-card border border-violet-500/20 rounded-2xl p-4">
               <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center mb-2">
                 <Icon size={16} className="text-slate-800" />
               </div>
@@ -187,7 +187,7 @@ export default function Pricing() {
         </div>
 
         {/* Price + CTA */}
-        <div className="bg-app-card border border-blue-500/30 rounded-2xl p-5 space-y-4">
+        <div className="bg-app-card border border-violet-500/30 rounded-2xl p-5 space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-gray-400 text-sm line-through">{priceOld}</span>
             <span className="bg-rose-500/20 text-rose-400 text-xs font-bold px-2 py-0.5 rounded-full">🔥 Lançamento</span>
@@ -236,14 +236,14 @@ export default function Pricing() {
               ))}
             </div>
             {/* Premium column */}
-            <div className="bg-blue-500/5 border border-blue-500/30 rounded-2xl p-4 space-y-2">
+            <div className="bg-violet-500/5 border border-violet-500/30 rounded-2xl p-4 space-y-2">
               <div className="flex items-center gap-1.5 mb-3">
-                <Crown size={14} className="text-blue-400" />
-                <span className="text-blue-400 text-xs font-semibold uppercase tracking-wider">Premium</span>
+                <Crown size={14} className="text-violet-400" />
+                <span className="text-violet-400 text-xs font-semibold uppercase tracking-wider">Premium</span>
               </div>
               {PREMIUM_FEATURES.map((f, i) => (
                 <div key={i} className="flex items-start gap-2">
-                  <Check size={13} className="text-blue-400 flex-shrink-0 mt-0.5" />
+                  <Check size={13} className="text-violet-400 flex-shrink-0 mt-0.5" />
                   <span className="text-gray-700 text-xs leading-tight">{f.label}</span>
                 </div>
               ))}

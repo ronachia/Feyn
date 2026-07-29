@@ -97,7 +97,7 @@ export default function PlacementTest() {
           </div>
 
           <div className="w-full bg-app-card border border-app-border rounded-2xl p-4 text-left space-y-2">
-            <p className="text-blue-400 text-sm font-semibold">What this means:</p>
+            <p className="text-violet-400 text-sm font-semibold">What this means:</p>
             {result.level === 'beginner' && (
               <p className="text-gray-500 text-sm">You're building your English foundation. We'll start with everyday situations and essential vocabulary.</p>
             )}
@@ -136,7 +136,7 @@ export default function PlacementTest() {
       {/* Header */}
       <div className="px-6 pt-12 pb-4">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-blue-400 text-xs font-bold uppercase tracking-widest">Placement Test</p>
+          <p className="text-violet-400 text-xs font-bold uppercase tracking-widest">Placement Test</p>
           <span className="text-gray-400 text-xs">{current + 1} / {PLACEMENT_QUESTIONS.length}</span>
         </div>
         <div className="h-1.5 bg-app-border rounded-full overflow-hidden">
@@ -165,7 +165,7 @@ export default function PlacementTest() {
                 if (opt === question.answer) style = 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700'
                 else if (opt === selected)   style = 'border-rose-500/50 bg-rose-500/10 text-rose-600'
               } else if (opt === selected) {
-                style = 'border-blue-500/60 bg-blue-500/10 text-blue-700'
+                style = 'border-violet-500/60 bg-violet-500/10 text-violet-700'
               }
 
               return (
@@ -178,7 +178,7 @@ export default function PlacementTest() {
                   {submitted && opt === question.answer && <CheckCircle size={16} className="text-emerald-500 flex-shrink-0" />}
                   {submitted && opt === selected && opt !== question.answer && <XCircle size={16} className="text-rose-500 flex-shrink-0" />}
                   {(!submitted || (opt !== question.answer && opt !== selected)) && (
-                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${selected === opt ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`} />
+                    <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${selected === opt ? 'border-violet-500 bg-violet-500' : 'border-gray-300'}`} />
                   )}
                   <span>{opt}</span>
                 </button>

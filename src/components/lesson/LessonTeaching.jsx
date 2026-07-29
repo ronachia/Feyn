@@ -12,7 +12,7 @@ export default function LessonTeaching({ history, round, input, onInput, onSend,
   return (
     <div className="pt-2 flex flex-col h-full">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-xl">🧑‍🎓</div>
+        <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center text-xl">🧑‍🎓</div>
         <div>
           <p className="text-slate-800 font-semibold text-sm">Teo (AI Student)</p>
           <p className="text-gray-500 text-xs">
@@ -22,7 +22,7 @@ export default function LessonTeaching({ history, round, input, onInput, onSend,
         {!concluded && (
           <div className="ml-auto flex gap-1">
             {[1,2,3].map((r) => (
-              <div key={r} className={`w-2 h-2 rounded-full ${r <= round ? 'bg-blue-500' : 'bg-app-border'}`} />
+              <div key={r} className={`w-2 h-2 rounded-full ${r <= round ? 'bg-violet-500' : 'bg-app-border'}`} />
             ))}
           </div>
         )}
@@ -34,17 +34,17 @@ export default function LessonTeaching({ history, round, input, onInput, onSend,
           animate={{ opacity: 1, scale: 1 }}
           className="mb-4 gradient-primary rounded-2xl p-4 glow-purple text-center"
         >
-          <p className="text-blue-200 text-xs mb-1">Teaching Mastery</p>
-          <p className="text-slate-800 font-bold text-3xl">{score}<span className="text-sm text-blue-200">/10</span></p>
-          {summary && <p className="text-blue-200 text-xs mt-1 leading-tight">"{summary}"</p>}
-          <p className="text-blue-200 text-xs mt-2">+{Math.round(score * 10)} XP earned!</p>
+          <p className="text-violet-200 text-xs mb-1">Teaching Mastery</p>
+          <p className="text-slate-800 font-bold text-3xl">{score}<span className="text-sm text-violet-200">/10</span></p>
+          {summary && <p className="text-violet-200 text-xs mt-1 leading-tight">"{summary}"</p>}
+          <p className="text-violet-200 text-xs mt-2">+{Math.round(score * 10)} XP earned!</p>
         </motion.div>
       )}
 
       <div className="flex-1 space-y-3 overflow-y-auto mb-4 max-h-80 pr-1">
         {history.length === 0 && loading && (
           <div className="flex gap-3 items-end">
-            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-sm flex-shrink-0">🧑‍🎓</div>
+            <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm flex-shrink-0">🧑‍🎓</div>
             <div className="bg-app-card border border-app-border rounded-2xl rounded-bl-sm px-4 py-3">
               <motion.div className="flex gap-1" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}>
                 <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
@@ -63,7 +63,7 @@ export default function LessonTeaching({ history, round, input, onInput, onSend,
             className={`flex gap-3 items-end ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
           >
             {msg.role === 'student' && (
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${msg.isFinal ? 'gradient-primary' : 'bg-blue-500/20'}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${msg.isFinal ? 'gradient-primary' : 'bg-violet-500/20'}`}>
                 🧑‍🎓
               </div>
             )}
@@ -79,7 +79,7 @@ export default function LessonTeaching({ history, round, input, onInput, onSend,
 
         {history.length > 0 && loading && (
           <div className="flex gap-3 items-end">
-            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-sm flex-shrink-0">🧑‍🎓</div>
+            <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm flex-shrink-0">🧑‍🎓</div>
             <div className="bg-app-card border border-app-border rounded-2xl rounded-bl-sm px-4 py-3">
               <motion.div className="flex gap-1" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}>
                 <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
@@ -108,7 +108,7 @@ export default function LessonTeaching({ history, round, input, onInput, onSend,
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && onSend()}
             placeholder="Answer Teo's question..."
             disabled={loading || history.length === 0}
-            className="flex-1 bg-app-card border border-app-border rounded-2xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-blue-500/60 transition-colors disabled:opacity-50"
+            className="flex-1 bg-app-card border border-app-border rounded-2xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-violet-500/60 transition-colors disabled:opacity-50"
           />
           <button
             onClick={onSend}

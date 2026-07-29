@@ -238,7 +238,7 @@ export default function CreateLesson() {
                     onClick={() => setContentType(id)}
                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all text-center ${
                       contentType === id
-                        ? 'border-blue-500/50 bg-blue-500/10'
+                        ? 'border-violet-500/50 bg-violet-500/10'
                         : 'border-app-border bg-app-card'
                     }`}
                   >
@@ -268,10 +268,10 @@ export default function CreateLesson() {
                             <button
                               key={template.title}
                               onClick={() => applyTemplate(template)}
-                              className="w-full flex items-center gap-3 p-3 rounded-xl border border-app-border bg-app-card hover:border-blue-500/40 transition-all text-left"
+                              className="w-full flex items-center gap-3 p-3 rounded-xl border border-app-border bg-app-card hover:border-violet-500/40 transition-all text-left"
                             >
-                              <div className={`w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center ${copiedTemplate === template.title ? 'bg-emerald-500/10' : ''}`}>
-                                {copiedTemplate === template.title ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-blue-500" />}
+                              <div className={`w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center ${copiedTemplate === template.title ? 'bg-emerald-500/10' : ''}`}>
+                                {copiedTemplate === template.title ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-violet-500" />}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-gray-300 text-sm font-medium truncate">{template.title}</p>
@@ -295,7 +295,7 @@ export default function CreateLesson() {
                       <button
                         onClick={regenerateContent}
                         disabled={generating}
-                        className="flex items-center gap-1 text-blue-400 text-xs hover:text-blue-300 transition-colors"
+                        className="flex items-center gap-1 text-violet-400 text-xs hover:text-violet-300 transition-colors"
                       >
                         <RefreshCw size={12} className={generating ? 'animate-spin' : ''} />
                         {generating ? 'Generating...' : 'Generate full content'}
@@ -307,7 +307,7 @@ export default function CreateLesson() {
                     value={textContent}
                     onChange={(e) => setTextContent(e.target.value)}
                     placeholder={contentType === 'template' ? "Template prompt will appear here. Click 'Generate full content' or write your own..." : "Paste any article, news, story, or text in English (min. 50 characters)..."}
-                    className="w-full bg-app-card border border-app-border rounded-2xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 resize-none focus:border-blue-500/60 transition-colors"
+                    className="w-full bg-app-card border border-app-border rounded-2xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 resize-none focus:border-violet-500/60 transition-colors"
                   />
                   <div className="flex items-center justify-between mt-1">
                     <p className="text-gray-600 text-xs">~{estimatedWords} words</p>
@@ -326,7 +326,7 @@ export default function CreateLesson() {
                     value={mediaUrl}
                     onChange={(e) => setMediaUrl(e.target.value)}
                     placeholder={contentType === 'video' ? 'https://www.youtube.com/watch?v=...' : 'https://example.com/audio.mp3'}
-                    className="w-full bg-app-card border border-app-border rounded-2xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-blue-500/60 transition-colors"
+                    className="w-full bg-app-card border border-app-border rounded-2xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-violet-500/60 transition-colors"
                   />
                   {contentType === 'video' && mediaUrl && !extractYouTubeId(mediaUrl) && (
                     <p className="text-rose-400 text-xs mt-1">Invalid YouTube URL</p>
@@ -370,7 +370,7 @@ export default function CreateLesson() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. The Rise of Electric Cars"
-                  className="w-full bg-app-card border border-app-border rounded-2xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-blue-500/60 transition-colors"
+                  className="w-full bg-app-card border border-app-border rounded-2xl px-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-violet-500/60 transition-colors"
                 />
               </div>
 
@@ -383,11 +383,11 @@ export default function CreateLesson() {
                       onClick={() => setCategory(id)}
                       className={`flex items-center gap-2 p-3 rounded-xl border transition-all text-left ${
                         category === id
-                          ? 'border-blue-500/50 bg-blue-500/10'
+                          ? 'border-violet-500/50 bg-violet-500/10'
                           : 'border-app-border bg-app-card'
                       }`}
                     >
-                      <Icon size={16} className={category === id ? 'text-blue-400' : 'text-gray-500'} />
+                      <Icon size={16} className={category === id ? 'text-violet-400' : 'text-gray-500'} />
                       <span className={`text-sm ${category === id ? 'text-gray-300 font-medium' : 'text-gray-400'}`}>{id}</span>
                     </button>
                   ))}
@@ -420,7 +420,7 @@ export default function CreateLesson() {
                       onClick={() => setSubLevel(sl)}
                       className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${
                         subLevel === sl 
-                          ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40' 
+                          ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40' 
                           : 'border-app-border bg-app-card text-gray-500'
                       }`}
                     >
@@ -440,7 +440,7 @@ export default function CreateLesson() {
                     step={5}
                     value={estimatedMinutes}
                     onChange={(e) => setEstimatedMinutes(Number(e.target.value))}
-                    className="flex-1 h-2 bg-app-card rounded-lg appearance-none cursor-pointer accent-blue-500"
+                    className="flex-1 h-2 bg-app-card rounded-lg appearance-none cursor-pointer accent-violet-500"
                   />
                   <span className="text-gray-300 text-sm font-medium w-16">{estimatedMinutes} min</span>
                 </div>
@@ -483,7 +483,7 @@ export default function CreateLesson() {
                 className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border font-semibold text-sm transition-all ${
                   generating
                     ? 'border-app-border bg-app-card text-gray-500 cursor-not-allowed'
-                    : 'border-blue-500/40 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20'
+                    : 'border-violet-500/40 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20'
                 }`}
               >
                 {generating ? (
@@ -514,7 +514,7 @@ export default function CreateLesson() {
                           setKeyPoints(updated)
                         }}
                         placeholder={`Key point ${i + 1}...`}
-                        className="flex-1 bg-app-card border border-app-border rounded-xl px-3 py-2.5 text-gray-700 text-sm placeholder-gray-600 focus:border-blue-500/60 transition-colors"
+                        className="flex-1 bg-app-card border border-app-border rounded-xl px-3 py-2.5 text-gray-700 text-sm placeholder-gray-600 focus:border-violet-500/60 transition-colors"
                       />
                       {keyPoints.length > 2 && (
                         <button onClick={() => setKeyPoints(keyPoints.filter((_, j) => j !== i))}>
@@ -549,7 +549,7 @@ export default function CreateLesson() {
                           setVocabulary(updated)
                         }}
                         placeholder={`Word ${i + 1}`}
-                        className="flex-1 bg-app-card border border-app-border rounded-xl px-3 py-2 text-gray-700 text-sm placeholder-gray-600 focus:border-blue-500/60 transition-colors"
+                        className="flex-1 bg-app-card border border-app-border rounded-xl px-3 py-2 text-gray-700 text-sm placeholder-gray-600 focus:border-violet-500/60 transition-colors"
                       />
                     </div>
                   ))}

@@ -133,7 +133,7 @@ export default function Onboarding() {
           {step === 1 && (
             <motion.div key="feynman" {...slide} className="flex-1 flex flex-col pt-4 gap-6">
               <div>
-                <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">The Science Behind It</p>
+                <p className="text-violet-400 text-xs font-bold uppercase tracking-widest mb-2">The Science Behind It</p>
                 <h2 className="text-2xl font-bold text-slate-800 leading-snug">
                   The Feynman Technique
                 </h2>
@@ -152,12 +152,12 @@ export default function Onboarding() {
                     transition={{ delay: i * 0.1 }}
                     className="flex items-start gap-4 bg-app-card border border-app-border rounded-2xl p-4"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-xl flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-xl flex-shrink-0">
                       {s.emoji}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-blue-400 text-xs font-bold uppercase tracking-wider">Step {i + 1}</span>
+                        <span className="text-violet-400 text-xs font-bold uppercase tracking-wider">Step {i + 1}</span>
                         <span className="text-slate-800 font-semibold text-sm">{s.title}</span>
                       </div>
                       <p className="text-gray-400 text-xs leading-relaxed">{s.desc}</p>
@@ -166,8 +166,8 @@ export default function Onboarding() {
                 ))}
               </div>
 
-              <div className="bg-blue-500/8 border border-blue-500/20 rounded-2xl px-4 py-3">
-                <p className="text-blue-300 text-xs text-center font-medium">
+              <div className="bg-violet-500/8 border border-violet-500/20 rounded-2xl px-4 py-3">
+                <p className="text-violet-300 text-xs text-center font-medium">
                   💡 If you can't explain it simply, you don't understand it yet.
                 </p>
                 <p className="text-gray-600 text-xs text-center mt-0.5">— Richard Feynman</p>
@@ -186,7 +186,7 @@ export default function Onboarding() {
           {step === 2 && (
             <motion.div key="goal" {...slide} className="flex-1 flex flex-col pt-4 gap-5">
               <div>
-                <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 1 of 2</p>
+                <p className="text-violet-400 text-xs font-bold uppercase tracking-widest mb-2">Step 1 of 2</p>
                 <h2 className="text-2xl font-bold text-slate-800">What's your main goal?</h2>
                 <p className="text-gray-400 text-sm mt-1">We'll tailor your lessons around it.</p>
               </div>
@@ -198,8 +198,8 @@ export default function Onboarding() {
                     onClick={() => setGoal(g.id)}
                     className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${
                       goal === g.id
-                        ? 'border-blue-500/60 bg-blue-500/10 glow-purple'
-                        : 'border-app-border bg-app-card hover:border-blue-500/30'
+                        ? 'border-violet-500/60 bg-violet-500/10 glow-purple'
+                        : 'border-app-border bg-app-card hover:border-violet-500/30'
                     }`}
                   >
                     <span className="text-3xl">{g.icon}</span>
@@ -208,7 +208,7 @@ export default function Onboarding() {
                       <p className="text-gray-400 text-xs mt-0.5">{g.desc}</p>
                     </div>
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      goal === g.id ? 'border-blue-500 bg-blue-500' : 'border-app-border'
+                      goal === g.id ? 'border-violet-500 bg-violet-500' : 'border-app-border'
                     }`}>
                       {goal === g.id && <div className="w-2 h-2 rounded-full bg-white" />}
                     </div>
@@ -232,7 +232,7 @@ export default function Onboarding() {
           {step === 3 && (
             <motion.div key="level" {...slide} className="flex-1 flex flex-col pt-4 gap-5">
               <div>
-                <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">Step 2 of 2</p>
+                <p className="text-violet-400 text-xs font-bold uppercase tracking-widest mb-2">Step 2 of 2</p>
                 <h2 className="text-2xl font-bold text-slate-800">Your current English level?</h2>
                 <p className="text-gray-400 text-sm mt-1">Be honest — the app adapts to you.</p>
               </div>
@@ -244,8 +244,8 @@ export default function Onboarding() {
                     onClick={() => setLevel(l.id)}
                     className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${
                       level === l.id
-                        ? 'border-blue-500/60 bg-blue-500/10 glow-purple'
-                        : 'border-app-border bg-app-card hover:border-blue-500/30'
+                        ? 'border-violet-500/60 bg-violet-500/10 glow-purple'
+                        : 'border-app-border bg-app-card hover:border-violet-500/30'
                     }`}
                   >
                     <span className="text-3xl">{l.emoji}</span>
@@ -254,7 +254,7 @@ export default function Onboarding() {
                       <p className="text-gray-400 text-xs mt-0.5">{l.desc}</p>
                     </div>
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      level === l.id ? 'border-blue-500 bg-blue-500' : 'border-app-border'
+                      level === l.id ? 'border-violet-500 bg-violet-500' : 'border-app-border'
                     }`}>
                       {level === l.id && <div className="w-2 h-2 rounded-full bg-white" />}
                     </div>

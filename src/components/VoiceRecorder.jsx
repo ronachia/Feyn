@@ -113,7 +113,7 @@ export default function VoiceRecorder({ onTranscript, disabled }) {
             <button
               onClick={startRecording}
               disabled={disabled}
-              className="w-full flex flex-col items-center gap-3 py-8 rounded-2xl bg-app-card border-2 border-dashed border-blue-500/30 hover:border-blue-500/60 transition-all group"
+              className="w-full flex flex-col items-center gap-3 py-8 rounded-2xl bg-app-card border-2 border-dashed border-violet-500/30 hover:border-violet-500/60 transition-all group"
             >
               <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center glow-purple group-hover:scale-105 transition-transform">
                 <Mic size={28} className="text-slate-800" />
@@ -137,7 +137,7 @@ export default function VoiceRecorder({ onTranscript, disabled }) {
                     key={i}
                     animate={{ height: h }}
                     transition={{ duration: 0.1 }}
-                    className="w-1.5 rounded-full bg-gradient-to-t from-blue-600 to-cyan-400"
+                    className="w-1.5 rounded-full bg-gradient-to-t from-violet-600 to-cyan-400"
                     style={{ minHeight: 4 }}
                   />
                 ))}
@@ -163,7 +163,7 @@ export default function VoiceRecorder({ onTranscript, disabled }) {
             className="flex flex-col items-center gap-4 py-10 bg-app-card border border-app-border rounded-2xl"
           >
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}>
-              <Loader size={32} className="text-blue-400" />
+              <Loader size={32} className="text-violet-400" />
             </motion.div>
             <div className="text-center">
               <p className="text-slate-800 font-semibold">Transcribing with Whisper...</p>
@@ -183,7 +183,7 @@ export default function VoiceRecorder({ onTranscript, disabled }) {
               value={editedText}
               onChange={(e) => setEditedText(e.target.value)}
               rows={5}
-              className="w-full bg-app-card border border-emerald-500/30 rounded-xl px-4 py-3 text-gray-700 text-sm resize-none focus:border-blue-500/60 transition-colors"
+              className="w-full bg-app-card border border-emerald-500/30 rounded-xl px-4 py-3 text-gray-700 text-sm resize-none focus:border-violet-500/60 transition-colors"
             />
             <p className="text-gray-600 text-xs text-right">{editedText.trim().split(/\s+/).filter(Boolean).length} words</p>
             <div className="flex gap-2">

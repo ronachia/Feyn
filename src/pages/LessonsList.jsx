@@ -23,7 +23,7 @@ function LessonCard({ lesson, done, onDelete, index }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
       className={`bg-app-card border rounded-2xl overflow-hidden transition-all duration-200 ${
-        done ? 'border-emerald-300 bg-emerald-50/20' : 'border-app-border hover:border-blue-300 hover:shadow-sm'
+        done ? 'border-emerald-300 bg-emerald-50/20' : 'border-app-border hover:border-violet-300 hover:shadow-sm'
       }`}
     >
       <button
@@ -225,7 +225,7 @@ export default function LessonsList() {
             placeholder="Search by title or topic…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-app-card border border-app-border rounded-2xl pl-10 pr-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-blue-500/50 transition-colors"
+            className="w-full bg-app-card border border-app-border rounded-2xl pl-10 pr-4 py-3 text-gray-700 text-sm placeholder-gray-600 focus:border-violet-500/50 transition-colors"
           />
         </div>
       </div>

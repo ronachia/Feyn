@@ -64,8 +64,8 @@ export default function Home() {
               <span className="text-slate-800 font-semibold text-sm">{levelInfo.current.name}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Zap size={13} className="text-blue-600" />
-              <span className="text-blue-600 font-bold text-sm tabular-nums">{xp || 0} XP</span>
+              <Zap size={13} className="text-violet-600" />
+              <span className="text-violet-600 font-bold text-sm tabular-nums">{xp || 0} XP</span>
               {levelInfo.next && <span className="text-slate-400 text-xs">/ {levelInfo.next.minXP}</span>}
             </div>
           </div>
@@ -92,7 +92,7 @@ export default function Home() {
           className="grid grid-cols-3 gap-3"
         >
           <StatCard value={streak}        label="Streak"   icon={<Flame    size={15} className="text-orange-500" />} />
-          <StatCard value={totalSessions} label="Sessions" icon={<BookOpen size={15} className="text-blue-500"   />} />
+          <StatCard value={totalSessions} label="Sessions" icon={<BookOpen size={15} className="text-violet-500"   />} />
           <StatCard value={gaps.length}   label="Gaps"     icon={<TrendingUp size={15} className="text-cyan-600" />} />
         </motion.div>
 
@@ -102,7 +102,7 @@ export default function Home() {
           {nextLesson ? (
             <button
               onClick={() => navigate(`/lesson/${nextLesson.id}`)}
-              className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-left relative overflow-hidden group hover:border-blue-400 hover:shadow-md active:scale-[0.99] transition-all duration-200"
+              className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-left relative overflow-hidden group hover:border-violet-400 hover:shadow-md active:scale-[0.99] transition-all duration-200"
             >
               <div className="absolute top-0 right-0 w-28 h-28 gradient-primary opacity-8 rounded-full translate-x-8 -translate-y-8 group-hover:opacity-15 transition-opacity" />
               <div className="flex items-center gap-4">
@@ -156,7 +156,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => navigate('/practice')}
-              className="mt-2 w-full py-3 rounded-2xl bg-blue-50 border border-blue-200 text-blue-600 text-sm font-semibold flex items-center justify-center gap-2"
+              className="mt-2 w-full py-3 rounded-2xl bg-violet-50 border border-violet-200 text-violet-600 text-sm font-semibold flex items-center justify-center gap-2"
             >
               <Zap size={15} /> Practice These Gaps
             </button>
@@ -260,11 +260,11 @@ export default function Home() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <button
             onClick={() => navigate('/lessons')}
-            className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-left hover:border-blue-300 hover:shadow-sm active:scale-[0.99] transition-all"
+            className="w-full bg-app-card border border-app-border rounded-3xl p-5 text-left hover:border-violet-300 hover:shadow-sm active:scale-[0.99] transition-all"
           >
             <div className="flex items-center justify-between mb-3">
               <p className="text-slate-800 font-bold text-sm">Course Progress</p>
-              <span className="text-blue-500 text-xs font-semibold flex items-center gap-1">
+              <span className="text-violet-500 text-xs font-semibold flex items-center gap-1">
                 Browse all <ChevronRight size={13} />
               </span>
             </div>

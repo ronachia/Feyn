@@ -67,9 +67,9 @@ export default function LessonFeedback({ feedback, onTryAgain, onComplete, onTea
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-gray-400 text-sm">Clarity</span>
-                <span className="text-blue-400 text-xs font-medium">How simple &amp; clear</span>
+                <span className="text-violet-400 text-xs font-medium">How simple &amp; clear</span>
               </div>
-              <ScoreBar value={feedback.clarityScore} color="bg-blue-500" />
+              <ScoreBar value={feedback.clarityScore} color="bg-violet-500" />
             </div>
             <div>
               <div className="flex justify-between mb-1">
@@ -149,7 +149,7 @@ export default function LessonFeedback({ feedback, onTryAgain, onComplete, onTea
               <p className="text-gray-400 text-sm font-semibold mb-2">🎯 Concepts to revisit</p>
               <div className="flex flex-wrap gap-2">
                 {feedback.gaps.map((gap, i) => (
-                  <span key={i} className="bg-blue-500/20 text-blue-300 text-xs px-3 py-1.5 rounded-full capitalize">
+                  <span key={i} className="bg-violet-500/20 text-violet-300 text-xs px-3 py-1.5 rounded-full capitalize">
                     {gap}
                   </span>
                 ))}
@@ -180,7 +180,7 @@ export default function LessonFeedback({ feedback, onTryAgain, onComplete, onTea
           <div>
             <button
               onClick={() => setShowSuggested(!showSuggested)}
-              className="flex items-center gap-2 text-blue-400 text-sm font-medium"
+              className="flex items-center gap-2 text-violet-400 text-sm font-medium"
             >
               {showSuggested ? <EyeOff size={15} /> : <Eye size={15} />}
               {showSuggested ? 'Hide' : 'See'} Feynman model explanation
@@ -189,7 +189,7 @@ export default function LessonFeedback({ feedback, onTryAgain, onComplete, onTea
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="mt-2 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4"
+                className="mt-2 bg-violet-500/10 border border-violet-500/20 rounded-xl p-4"
               >
                 <p className="text-gray-600 text-sm leading-relaxed">{feedback.suggestedExplanation}</p>
               </motion.div>
@@ -207,12 +207,12 @@ export default function LessonFeedback({ feedback, onTryAgain, onComplete, onTea
       {/* Teach CTA */}
       <button
         onClick={onTeach}
-        className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-300 font-semibold"
+        className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-violet-500/10 border border-violet-500/30 text-violet-300 font-semibold"
       >
         <span className="text-xl">🧑‍🎓</span>
         <div className="text-left flex-1">
           <p className="text-sm font-semibold">Teach the Student</p>
-          <p className="text-blue-400 text-xs">Teo asks questions to deepen your understanding</p>
+          <p className="text-violet-400 text-xs">Teo asks questions to deepen your understanding</p>
         </div>
         {!isPremium && <span className="text-base">👑</span>}
       </button>
