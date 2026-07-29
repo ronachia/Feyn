@@ -14,6 +14,7 @@ import VoiceRecorder from '../components/VoiceRecorder'
 import LessonRead from '../components/lesson/LessonRead'
 import LessonFeedback from '../components/lesson/LessonFeedback'
 import LessonTeaching from '../components/lesson/LessonTeaching'
+import TeoMascot from '../components/TeoMascot'
 
 export default function Lesson() {
   const { id } = useParams()
@@ -28,7 +29,7 @@ export default function Lesson() {
     explanation, setExplanation, inputMode, setInputMode, isRecording, fluency, showContent, peeked,
     feedback, isAnalyzing,
     teachHistory, teachRound, teachInput, setTeachInput, teachLoading, teachScore, teachSummary,
-    sessionXP, showXPToast,
+    sessionXP, showXPToast, streak,
     error, setError,
     isPremium, remainingAICalls,
     startRecording, stopRecording,
@@ -373,16 +374,19 @@ export default function Lesson() {
             <Phase key="complete">
               <div className="flex flex-col items-center text-center gap-6 pt-4">
                 <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 200 }}
-                  className="text-8xl"
+                  initial={{ scale: 0, rotate: -10 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 11 }}
+                  className="w-32 h-32 drop-shadow-xl drop-shadow-violet-500/30"
                 >
-                  🎉
+                  <TeoMascot mood="excited" className="w-full h-full" />
                 </motion.div>
                 <div>
                   <h2 className="text-2xl font-bold text-slate-800 mb-2">Lesson Complete!</h2>
                   <p className="text-gray-400">You practiced active learning. That's real fluency.</p>
+                  {streak >= 3 && (
+                    <p className="text-orange-500 text-sm font-semibold mt-2">🔥 {streak}-day streak, Teo's impressed!</p>
+                  )}
                 </div>
 
                 {feedback && (

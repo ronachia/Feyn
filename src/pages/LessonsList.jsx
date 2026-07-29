@@ -6,6 +6,7 @@ import { Search, Plus, Trash2, ChevronRight } from 'lucide-react'
 import { getLevelColor, getLevelLabel, getContentTypeInfo, getSubLevelColor, getSubLevelLabel, SUB_LEVELS, SUB_LEVEL_META } from '../data/lessonHelpers'
 import useAppStore from '../store/useAppStore'
 import BottomNav from '../components/BottomNav'
+import TeoMascot from '../components/TeoMascot'
 
 const LEVEL_ORDER  = ['beginner', 'intermediate', 'advanced']
 const LEVEL_META   = {
@@ -234,7 +235,7 @@ export default function LessonsList() {
       <div className="px-6 flex-1">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-5xl mb-4">{tab === 'custom' && !search ? '✏️' : '🔍'}</p>
+            <TeoMascot mood="thinking" className="w-20 h-20 mb-4 opacity-90" />
             {tab === 'custom' && !search ? (
               <>
                 <p className="text-slate-800 font-semibold mb-1">No custom lessons yet</p>

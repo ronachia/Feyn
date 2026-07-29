@@ -225,7 +225,7 @@ export default function useLessonFlow(lesson) {
     // teaching
     teachHistory, teachRound, teachInput, setTeachInput, teachLoading, teachScore, teachSummary,
     // completion
-    sessionXP, showXPToast,
+    sessionXP, showXPToast, streak,
     // shared
     error, setError,
     isPremium, remainingAICalls,
