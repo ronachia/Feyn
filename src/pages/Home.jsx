@@ -8,6 +8,7 @@ import useLessons from '../hooks/useLessons'
 import { getLevelInfo } from '../data/badges'
 import BottomNav from '../components/BottomNav'
 import useSRS from '../hooks/useSRS'
+import TeoMascot from '../components/TeoMascot'
 
 export default function Home() {
   const navigate        = useNavigate()
@@ -206,11 +207,11 @@ export default function Home() {
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-5 overflow-hidden">
+              <div className="relative gradient-primary rounded-3xl p-5 overflow-hidden">
                 {/* dismiss */}
                 <button
                   onClick={dismissMethodCard}
-                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/20 flex items-center justify-center"
+                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/20 flex items-center justify-center z-10"
                 >
                   <X size={13} className="text-white" />
                 </button>
@@ -218,9 +219,11 @@ export default function Home() {
                 {/* decorative blobs */}
                 <div className="absolute -bottom-4 -right-4 w-28 h-28 bg-white/10 rounded-full" />
                 <div className="absolute -top-6 -left-6 w-20 h-20 bg-white/10 rounded-full" />
+                {/* Teo peeking in */}
+                <TeoMascot mood="thinking" className="absolute -bottom-3 -right-2 w-20 h-20 opacity-90 rotate-6" />
 
-                <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">Why it works</p>
-                <h3 className="text-white font-extrabold text-base mb-3 leading-snug">
+                <p className="text-violet-100 text-xs font-bold uppercase tracking-widest mb-1">Why it works</p>
+                <h3 className="text-white font-extrabold text-base mb-3 leading-snug max-w-[80%]">
                   The Feynman Technique — learn by teaching
                 </h3>
 

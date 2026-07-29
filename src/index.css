@@ -5,7 +5,7 @@
 /* ── CSS Variables — Light Mode ───────────────────────────── */
 :root {
   --bg-app:       #FAFAFA;
-  --bg-root:      #F0F4FF;
+  --bg-root:      #F5F2FE;
   --bg-card:      #FFFFFF;
   --bg-surface:   #F8FAFC;
   --border:       #E2E8F0;
@@ -45,7 +45,7 @@ html, body, #root {
 body {
   background-color: var(--bg-app);
   color: var(--text-primary);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -95,26 +95,26 @@ button:focus-visible {
 @layer utilities {
   /* Gradients */
   .gradient-primary {
-    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
   }
   .gradient-accent {
     background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
   }
   .gradient-card {
-    background: linear-gradient(135deg, #F0F4FF 0%, #EFF6FF 100%);
+    background: linear-gradient(135deg, #F5F3FF 0%, #FAF5FF 100%);
   }
   .text-gradient {
-    background: linear-gradient(135deg, #2563EB 0%, #F97316 100%);
+    background: linear-gradient(135deg, #8B5CF6 0%, #C026D3 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   /* Glows */
-  .glow-blue   { box-shadow: 0 4px 20px rgba(37, 99, 235, 0.30); }
+  .glow-blue   { box-shadow: 0 4px 20px rgba(139, 92, 246, 0.30); }
   .glow-orange { box-shadow: 0 4px 20px rgba(249, 115, 22, 0.30); }
-  .glow-purple { box-shadow: 0 4px 20px rgba(37, 99, 235, 0.22); }
-  .glow-cyan   { box-shadow: 0 4px 20px rgba(37, 99, 235, 0.18); }
+  .glow-purple { box-shadow: 0 4px 20px rgba(124, 58, 237, 0.28); }
+  .glow-cyan   { box-shadow: 0 4px 20px rgba(6, 182, 212, 0.25); }
 
   /* Smooth transitions — apply to interactive elements */
   .btn-transition {

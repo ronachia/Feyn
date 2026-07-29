@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useSignIn, useSignUp, useClerk, useAuth } from '@clerk/clerk-react'
 import { isNativePlatform } from '../services/platform'
+import TeoMascot from '../components/TeoMascot'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AUTH PAGE PRINCIPAL - Entry point com tabs de Sign In / Sign Up
@@ -38,10 +39,15 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-4xl shadow-xl shadow-violet-500/25">
-            🧠
-          </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+          <motion.div
+            initial={{ scale: 0.6, rotate: -8 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 12 }}
+            className="w-24 h-24 mx-auto mb-3 drop-shadow-xl drop-shadow-violet-500/30"
+          >
+            <TeoMascot className="w-full h-full" />
+          </motion.div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gradient">
             FeynLearn
           </h1>
           <p className="text-slate-500 text-sm mt-2">
